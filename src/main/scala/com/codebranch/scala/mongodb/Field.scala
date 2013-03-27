@@ -24,6 +24,7 @@ class Field[T](val key : String, default : Option[T] = None)
 
 
 	def := (v : Option[T]) = set(v)
+  def := (v : T) = set(Some(v))
 
 
 	def toOption = _value
