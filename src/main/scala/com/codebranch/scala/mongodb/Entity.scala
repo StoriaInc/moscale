@@ -30,6 +30,17 @@ object EntityId {
   }
 }
 
+trait FieldValidator extends EntityMetadata {
+  def isValid = validate.isEmpty
+  def validate: Map[String, Seq[String]] = entityMetadata.fieldsMap map {
+    case (k, f) =>
+       (k -> f.validate)
+  } filterNot {
+    case (k, e) =>
+      e.isEmpty
+  }
+}
+
 
 class Entity extends EntityMetadata with Cloneable
 {

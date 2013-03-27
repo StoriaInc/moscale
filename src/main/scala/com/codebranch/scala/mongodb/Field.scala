@@ -6,7 +6,9 @@ import com.sun.istack.internal.NotNull
 
 
 
-class Field[T](val key : String, default : Option[T] = None)
+class Field[T](val key : String,
+               default : Option[T] = None,
+               validator: Seq[Option[T] => Option[String]] = Seq())
               (implicit val tm : Manifest[T],
                th : TypeHandler[Option[T]],
                val entityMetadata : EntityMetadata#Metadata)
@@ -17,6 +19,9 @@ class Field[T](val key : String, default : Option[T] = None)
 
 	private var _value = default
 
+  def validate: Seq[String] = validator flatMap (v => v(_value))
+
+  def isValid: Boolean = validate.isEmpty
 
 	def set(v : Option[T]) {
 		_value = v
@@ -64,24 +69,12 @@ class Field[T](val key : String, default : Option[T] = None)
 
 object Field
 {
-	def apply[T](key : String, default : Option[T] = null)(
-		implicit m : Manifest[T],
-		th : TypeHandler[Option[T]],
-		entityMetadata : EntityMetadata#Metadata)
-	= new Field[T](key, default)
+  def apply[T](key : String,
+               default : Option[T] = None,
+               validator: Seq[Option[T] => Option[String]] = Seq())
+              (implicit m : Manifest[T],
+               th : TypeHandler[Option[T]],
+               entityMetadata : EntityMetadata#Metadata)
+  = new Field[T](key, default)
 }
 
-//object OptionalField
-//{
-//	def apply[T](key : String, default : Option[T] = None)(
-//		implicit m : Manifest[Option[T]],
-//		th : TypeHandler[Option[T]],
-//		entityMetadata : EntityMetadata#Metadata)
-//	= new Field[Option[T]](key, default)
-//
-//	def apply[T](key : String, default : T)(
-//		implicit m : Manifest[Option[T]],
-//		th : TypeHandler[Option[T]],
-//		entityMetadata : EntityMetadata#Metadata)
-//	= new Field[Option[T]](key, Some(default))
-//}
