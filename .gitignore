@@ -1,0 +1,6 @@
+.idea
+.idea_modules/
+lib_managed/
+target/
+project/target/
+project/project/target/
