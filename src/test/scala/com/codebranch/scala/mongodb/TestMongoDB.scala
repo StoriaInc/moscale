@@ -8,8 +8,7 @@ import handlers._
 import Value.asValue
 import org.joda.time.DateTime
 import com.mongodb.{MongoClientURI, BasicDBObject, DBObject}
-
-
+import ch.qos.logback.core.helpers.ThrowableToStringArray
 
 
 @CollectionEntity(databaseName = "test", collectionName = "TestEntity")
@@ -48,6 +47,13 @@ class TestComplexEntity extends Entity with EntityId {
 	val children = Field[List[TestEntity]]("children")
 	val leaf = Field[TestEntity]("leaf")
 	val refF = Field[Reference[TestEntity]]("child")
+}
+@CollectionEntity(databaseName = "test", collectionName = "TestEntityWithValidator")
+class TestEntityWithValidator extends Entity with FieldValidator {
+	val requiredField = Field[String]("required", Some("a"), Seq((s => {
+	val v = "validation error"
+		Some(v)
+	})))
 }
 
 
@@ -333,6 +339,18 @@ class TestMongoDB extends Specification with BeforeAfter {
 
 //			"intF of inner entity does contain default toOption" <==>
 //			(e.entityF.toOption.intF.get must beEqualTo(Some(10)))
+		}
+
+		"Do field validation" in {
+			val e = new TestEntityWithValidator
+			e.requiredField.validate
+			e.requiredField.isValid must beFalse
+		}
+
+		"Throw validation exception" in {
+			val e = new TestEntityWithValidator
+			val collection = mongo.getCollection[TestEntityWithValidator]
+			collection.insert(e) must throwA[InvalidFields]
 		}
 	}
 }
