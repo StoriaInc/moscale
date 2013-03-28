@@ -7,7 +7,7 @@ import java.lang.{Integer => JInteger}
 import handlers._
 import Value.asValue
 import org.joda.time.DateTime
-import com.mongodb.{MongoURI, BasicDBObject, DBObject}
+import com.mongodb.{MongoClientURI, BasicDBObject, DBObject}
 
 
 
@@ -59,7 +59,7 @@ object Direction extends Enumeration {
 
 
 class TestMongoDB extends Specification with BeforeAfter {
-	implicit var mongo: Mongo = _
+	implicit var mongo: MongoClient = _
 	var testDb: Database = _
 	var testCol: Collection = _
 
@@ -68,7 +68,7 @@ class TestMongoDB extends Specification with BeforeAfter {
 	implicit def toOption[T](v: T): Option[T] = Some(v)
 
 	def before {
-		mongo = new Mongo(new MongoURI("mongodb://localhost:27017/test"))
+		mongo = new MongoClient(new MongoClientURI("mongodb://localhost:27017/test"))
     mongo.getDatabase("test").drop()
 	}
 
@@ -285,14 +285,13 @@ class TestMongoDB extends Specification with BeforeAfter {
 
 		"Create - findOne - remove" in {
 			val te = new TestEntity
-			mongo.getCollection[TestEntity].save(te)
-			val fte = mongo.findOne[TestEntity](Map(EntityId.Field.Id -> te.id))
-
-			"Saved toOption was found" <==>
-			(fte.isEmpty must beFalse)
-			val wr = mongo.getCollection[TestEntity].remove(fte.get)
-			"Entity was successfully removed" <==>
-			(wr.getLastError.ok() must beTrue)
+			val collection = mongo.getCollection[TestEntity]
+			collection.save(te)
+			val fte = collection.findOne[TestEntity](
+				Map(EntityId.Field.Id -> Value(te.id.get)))
+			"Saved TestEntity was found" <==> (fte.isEmpty must beFalse)
+			val wr = collection.remove[TestEntity](fte.get)
+			"Entity was successfully removed" <==> (wr.getLastError.ok() must beTrue)
 		}
 
 		"Conversion Joda DateTime" in {

@@ -1,30 +1,36 @@
 package com.codebranch.scala.mongodb
 
 import com.{mongodb => jmdb}
-import jmdb.{Mongo => JMongo, _}
+import jmdb.{Mongo => JMongo,
+MongoClient => JMongoClient,
+MongoClientURI => JMongoClientURI, _}
 import handlers._
 import collection.JavaConversions._
 import java.util
 
 
-class Mongo(val jMongo : JMongo)
+class MongoClient(val jMongo : JMongoClient)
 {
-  import Mongo._
+  import MongoClient._
 
-	def this(uri : MongoURI) = this(new JMongo(uri))
+	def this(uri : JMongoClientURI) = this(new JMongoClient(uri))
 
-	def this(addrs : Seq[jmdb.ServerAddress], options : MongoOptions) = this(new JMongo(seqAsJavaList(addrs), options))
+	def this(addrs : Seq[jmdb.ServerAddress], options : MongoClientOptions) =
+		this(new JMongoClient(seqAsJavaList(addrs), options))
 
-	def this(addrs : Seq[jmdb.ServerAddress]) = this(new JMongo(seqAsJavaList(addrs), null))
+	def this(addrs : Seq[jmdb.ServerAddress]) =
+		this(new JMongoClient(seqAsJavaList(addrs)))
 
-	def this(addr : jmdb.ServerAddress, options : MongoOptions) = this(Seq(addr), options)
+	def this(addr : jmdb.ServerAddress) = this(Seq(addr))
 
-	def this(addr : jmdb.ServerAddress) = this(addr, null)
+	def this(addr : jmdb.ServerAddress, options : MongoClientOptions) =
+		this(Seq(addr), options)
+
 
 	def this(
 		host : String = "localhost",
 		port : Int = 27017,
-		options : MongoOptions = null)
+		options : MongoClientOptions = null)
 	= this(new jmdb.ServerAddress(host, port), options)
 
 	def getDatabase(name: String) = {
@@ -59,37 +65,33 @@ class Mongo(val jMongo : JMongo)
 			                                     format (m.runtimeClass.getName))
 		}
 
-  @deprecated(message = "Use Collection.findOne() instead")
+  @deprecated(message = "Use Collection.findOne() instead", since = "1.0")
 	def findOne[T <: Entity](query : Map[String, Value])(implicit m : Manifest[T], th : TypeHandler[T]) =
 		getCollection[T].findOne[T](query)
 
-  @deprecated(message = "Use Collection.find()")
+  @deprecated(message = "Use Collection.find()", since = "1.0")
   def find[T <: Entity](query : Map[String, Value])(implicit m : Manifest[T], th : TypeHandler[T]) =
     getCollection[T].find[T](query)
 
-  @deprecated(message = "Use Collection.find() and cursor's skip and limit methods instead")
+  @deprecated(message = "Use Collection.find() and cursor's skip and limit methods instead", since = "1.0")
   def find[T <: Entity](query : Map[String, Value], limit: Int, offset: Int, sorter: DBObject)(implicit m : Manifest[T], th : TypeHandler[T]) =
     getCollection[T].find[T](query, limit, offset, sorter)
 
-	@deprecated(message = "Use Collection.save()")
+	@deprecated(message = "Use Collection.save()", since = "1.0")
 	def save[T <: Entity](entity : T)(implicit m : Manifest[T], th : TypeHandler[T]): WriteResult =
 		getCollection[T].save(entity)
 
-	@deprecated(message = "Use Collection.insert()")
+	@deprecated(message = "Use Collection.insert()", since = "1.0")
   def insert[T <: Entity](entity : T)(implicit m : Manifest[T], th : TypeHandler[T]): WriteResult =
     getCollection[T].insert(entity)
 
-	@deprecated(message = "Use Collection.delete()")
+	@deprecated(message = "Use Collection.delete()", since = "1.0")
 	def delete[T <: Entity](entity: T)(implicit m: Manifest[T], th: TypeHandler[T]) =
 		getCollection[T].remove(entity)
-
-//  @Deprecated
-//  def update[T <: Entity](query: Map[String,Value], data: Map[String,Value], upsert: Boolean, multi:Boolean)(implicit m: Manifest[T], th: TypeHandler[T]) =
-//    getCollection[T].update(query,data,upsert,multi)
 }
 
 
-object Mongo
+object MongoClient
 {
 	/**
 	 * Returns name of the collection with elements of type T. T should be annotated with CollectionEntity annotation.
@@ -184,5 +186,5 @@ object Query
 
 trait MongoSupport
 {
-	implicit val mongo : Mongo
+	implicit val mongo : MongoClient
 }

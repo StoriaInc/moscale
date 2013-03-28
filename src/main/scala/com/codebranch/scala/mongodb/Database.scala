@@ -4,7 +4,7 @@ import com.{mongodb => jmdb}
 
 
 /**
- * Mongo database wrapper.
+ * MongoClient database wrapper.
  */
 class Database(db: jmdb.DB)
 {

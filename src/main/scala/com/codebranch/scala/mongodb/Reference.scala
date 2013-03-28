@@ -48,7 +48,7 @@ class Reference[T <: EntityId]
 	}
 
 
-	def fetch (implicit mongo: Mongo): Option[T] = {
+	def fetch (implicit mongo: MongoClient): Option[T] = {
 		if (null == ref || null == id || null == db)
 			throw new RuntimeException("Collection name and objId must be defined!")
 

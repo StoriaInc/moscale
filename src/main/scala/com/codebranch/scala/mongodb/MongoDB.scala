@@ -1,13 +1,8 @@
 package com.codebranch.scala.mongodb
 
 
-import com.{mongodb => MongoDriver}
+import com.{mongodb => jMongodb}
 
 case class ServerAddress
-(host : String = MongoDriver.ServerAddress.defaultHost(),
- port : Int = MongoDriver.ServerAddress.defaultPort())
-
-class MongoDB
-{
-	val mongoDriver = new MongoDriver.Mongo
-}
+(host : String = jMongodb.ServerAddress.defaultHost(),
+ port : Int = jMongodb.ServerAddress.defaultPort())
