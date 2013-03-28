@@ -5,7 +5,7 @@ import jmdb.{WriteResult, DBObject, AggregationOutput}
 import scala.util.control.ControlThrowable
 import handlers._
 
-class InvalidFields(errors: Map[String, Seq[String]]) extends ControlThrowable
+case class InvalidFields(errors: Map[String, Seq[String]]) extends ControlThrowable
 
 class Collection(val jColl: jmdb.DBCollection)
 {
@@ -74,9 +74,13 @@ class Collection(val jColl: jmdb.DBCollection)
     save(toDBObject(dbo))
 
   def save[T <: Entity](entity : T)(implicit th: TypeHandler[T]): WriteResult = {
-		if (entity.isInstanceOf[FieldValidator])
-			checkValidity(entity)
-	  save(toDBObject(entity))
+	  entity match {
+		  case e: FieldValidator =>
+			  checkValidity(e)
+			  save(toDBObject(e))
+		  case e =>
+			  save(toDBObject(e))
+	  }
   }
 
 
@@ -87,9 +91,13 @@ class Collection(val jColl: jmdb.DBCollection)
     insert(toDBObject(dbo))
 
   def insert[T <: Entity](entity : T)(implicit th: TypeHandler[T]) : WriteResult = {
-	  if (entity.isInstanceOf[FieldValidator])
-		  checkValidity(entity)
-	  insert(toDBObject(entity))
+	  entity match {
+		  case e: FieldValidator =>
+			  checkValidity(e)
+			  save(toDBObject(e))
+		  case e =>
+			  insert(toDBObject(e))
+	  }
   }
 
 
