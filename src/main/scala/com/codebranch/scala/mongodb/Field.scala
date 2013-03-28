@@ -60,6 +60,7 @@ class Field[T](val key : String,
   }
 
 
+	//TODO: Why not _value.hashCode()?
   override def hashCode(): Int = super.hashCode()
 
 
@@ -75,6 +76,6 @@ object Field
               (implicit m : Manifest[T],
                th : TypeHandler[Option[T]],
                entityMetadata : EntityMetadata#Metadata)
-  = new Field[T](key, default)
+  = new Field[T](key, default, validator)
 }
 
