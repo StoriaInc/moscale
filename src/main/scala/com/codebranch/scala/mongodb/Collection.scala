@@ -2,8 +2,10 @@ package com.codebranch.scala.mongodb
 
 import com.{mongodb => jmdb}
 import jmdb.{WriteResult, DBObject, AggregationOutput}
+import scala.util.control.ControlThrowable
 import handlers._
 
+class InvalidFields(errors: Map[String, Seq[String]]) extends ControlThrowable
 
 class Collection(val jColl: jmdb.DBCollection)
 {
@@ -59,14 +61,23 @@ class Collection(val jColl: jmdb.DBCollection)
     findOne[T](Query(EntityId.Field.Id -> id))
 
 
-  def save(dbo : DBObject) : WriteResult =
-    jColl.save(dbo)
+  def save(dbo : DBObject) : WriteResult = jColl.save(dbo)
+
+
+	private def checkValidity[T <: FieldValidator](e :T) {
+		val errors = e.validate
+		if (!errors.isEmpty)
+			throw new InvalidFields(errors)
+	}
 
   def save(dbo : Value.Map) : WriteResult =
     save(toDBObject(dbo))
 
-  def save[T <: Entity](entity : T)(implicit th: TypeHandler[T]): WriteResult =
-    save(toDBObject(entity))
+  def save[T <: Entity](entity : T)(implicit th: TypeHandler[T]): WriteResult = {
+		if (entity.isInstanceOf[FieldValidator])
+			checkValidity(entity)
+	  save(toDBObject(entity))
+  }
 
 
   def insert(dbo : DBObject) : WriteResult =
@@ -75,8 +86,11 @@ class Collection(val jColl: jmdb.DBCollection)
   def insert(dbo : Value.Map) : WriteResult =
     insert(toDBObject(dbo))
 
-  def insert[T <: Entity](entity : T)(implicit th: TypeHandler[T]) : WriteResult =
-    insert(toDBObject(entity))
+  def insert[T <: Entity](entity : T)(implicit th: TypeHandler[T]) : WriteResult = {
+	  if (entity.isInstanceOf[FieldValidator])
+		  checkValidity(entity)
+	  insert(toDBObject(entity))
+  }
 
 
   def update(query : DBObject, obj : DBObject, upsert : Boolean, multi : Boolean) : WriteResult =
