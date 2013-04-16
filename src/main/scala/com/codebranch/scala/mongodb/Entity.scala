@@ -84,6 +84,8 @@ class Entity extends EntityMetadata with Cloneable
 
 	def merge[T <: Entity](entity : T) {
 		fromDBObject(entity.toDBObject, partial = true)
+		//TODO: What we should do if T is different class?
+		this.className := Some(this.getClass.getName)
 	}
 
 
