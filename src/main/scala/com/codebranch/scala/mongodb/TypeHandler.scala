@@ -2,7 +2,7 @@ package com.codebranch.scala.mongodb
 
 
 import com.mongodb.{BasicDBObject, BasicDBList, DBObject}
-import org.bson.types.ObjectId
+import org.bson.types.{BasicBSONList, ObjectId}
 import scala.language.implicitConversions
 import java.lang.{
   Integer => JInteger,
@@ -288,7 +288,7 @@ class ListTypeHandler[T](implicit th : TypeHandler[T])
   extends NotNullTypeHandler[List[T]]
 {
 	def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
-		case v: BasicDBList => {
+		case v: BasicBSONList => {
 			val buffer = ListBuffer[T]()
 			val it = v.iterator()
 
@@ -301,7 +301,7 @@ class ListTypeHandler[T](implicit th : TypeHandler[T])
 	}
 
   def toDBObjectNN(v: List[T]) = {
-	  val dbList = new BasicDBList
+	  val dbList = new BasicBSONList
 	  v foreach(x => dbList.add(th.toDBObject(x)))
 	  dbList
   }
