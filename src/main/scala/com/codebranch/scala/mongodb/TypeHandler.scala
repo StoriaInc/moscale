@@ -15,6 +15,7 @@ import collection.mutable.ListBuffer
 import org.joda.time.{DateTimeZone, DateTime}
 import java.util.regex.Pattern
 import java.net.URL
+import org.bson.BSONObject
 
 
 
@@ -207,7 +208,7 @@ class EntityTypeHandler[T <: Entity](implicit m : Manifest[T])
 		extends NotNullTypeHandler[T]
 {
   def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
-    case v : DBObject => {
+    case v : BSONObject => {
       v.get(Entity.Field.ClassName) match {
         case null =>
           m.runtimeClass.newInstance.asInstanceOf[T].fromDBObject(v, partial)
