@@ -2,7 +2,7 @@ package com.codebranch.scala.mongodb
 
 
 import com.mongodb.{BasicDBObject, BasicDBList, DBObject}
-import org.bson.types.{BasicBSONList, ObjectId}
+import org.bson.types.ObjectId
 import scala.language.implicitConversions
 import java.lang.{
   Integer => JInteger,
@@ -15,7 +15,6 @@ import collection.mutable.ListBuffer
 import org.joda.time.{DateTimeZone, DateTime}
 import java.util.regex.Pattern
 import java.net.URL
-import org.bson.BSONObject
 
 
 
@@ -208,7 +207,7 @@ class EntityTypeHandler[T <: Entity](implicit m : Manifest[T])
 		extends NotNullTypeHandler[T]
 {
   def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
-    case v : BSONObject => {
+    case v : DBObject => {
       v.get(Entity.Field.ClassName) match {
         case null =>
           m.runtimeClass.newInstance.asInstanceOf[T].fromDBObject(v, partial)
@@ -288,7 +287,7 @@ class ListTypeHandler[T](implicit th : TypeHandler[T])
   extends NotNullTypeHandler[List[T]]
 {
 	def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
-		case v: BasicBSONList => {
+		case v: BasicDBList => {
 			val buffer = ListBuffer[T]()
 			val it = v.iterator()
 
@@ -301,7 +300,7 @@ class ListTypeHandler[T](implicit th : TypeHandler[T])
 	}
 
   def toDBObjectNN(v: List[T]) = {
-	  val dbList = new BasicBSONList
+	  val dbList = new BasicDBList
 	  v foreach(x => dbList.add(th.toDBObject(x)))
 	  dbList
   }
