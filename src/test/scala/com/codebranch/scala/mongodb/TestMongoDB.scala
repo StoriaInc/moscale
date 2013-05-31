@@ -59,7 +59,7 @@ class TestEntityWithValidator extends Entity with FieldValidator {
 
 
 object Direction extends Enumeration {
-	val South, West, East = Value
+	val South, West, East, North = Value
 }
 
 
@@ -149,75 +149,6 @@ class TestMongoDB extends Specification with BeforeAfter {
 		}
 
 
-		"convert to List[Int]" in {
-			val th = implicitly[TypeHandler[List[Int]]]
-			val list = List(1, 2, 3)
-			val dboList = th.toDBObject(list)
-			th.fromDBObject(dboList) must beEqualTo(list)
-		}
-
-
-		"do conversion List[TestEntity]" in {
-			val e = new TestEntity
-			e.intF := Some(10)
-			e.strF := "test"
-
-			val ce = new TestComplexEntity
-			ce.children := List(e, e, e)
-
-			val o = ce.toDBObject
-			val ce2 = new TestComplexEntity
-			ce2.fromDBObject(o)
-
-      ce2.children.get.length must beEqualTo(3)
-//			ce2.children.get.foreach(_.length must beEqualTo(3))
-
-			ce2.children.get foreach {
-				_.foreach {
-					ch =>
-						ch.intF.get.foreach(_ must beEqualTo(10))
-						ch.strF.get must beEqualTo("test")
-				}
-			}
-		}
-
-
-		"Conversion List[Map[String, Option[Int]]" in {
-			val th = implicitly[TypeHandler[List[Map[String, Option[Int]]]]]
-
-			val list = List(
-				Map("1" -> Some(1), "2" -> Some(2)),
-				Map("10" -> Some(10), "20" -> Some(20))
-			)
-			val dboList = th.toDBObject(list)
-			th.fromDBObject(dboList) must beEqualTo(list)
-		}
-
-
-		"Conversion List[Map[String, Int]" in {
-			val th = implicitly[TypeHandler[List[Map[String, Int]]]]
-
-			val list = List(
-				Map("1" -> 1, "2" -> 2),
-				Map("10" -> 10, "20" -> 20)
-			)
-			val dboList = th.toDBObject(list)
-			th.fromDBObject(dboList) mustEqual list
-		}
-
-
-		"Conversion Map[String, Value]" in {
-			import Value.asValue
-			val map = Value(Value.Map("1" -> 1, "2" -> "2", "3" -> None, "4" -> Some("ass")))
-			val obj = Value(map).dbObject
-			Logger.debug(s"Converted Map[String, Value]: ${obj}")
-			val rmap = Value.fromDBObject(obj).asValue[Value.Map]
-			rmap.size must beEqualTo(4)
-			rmap.get("1").asValue[Int] must beEqualTo(1)
-			rmap.get("2").asValue[String] must beEqualTo("2")
-			rmap.get("3").asValue[Option[Value]] must beEqualTo(None)
-			rmap.get("4").asValue[Option[String]] must beEqualTo(Some("ass"))
-		}
 
 
 		"Mongo query test" in {

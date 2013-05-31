@@ -15,6 +15,7 @@ import collection.mutable.ListBuffer
 import org.joda.time.{DateTimeZone, DateTime}
 import java.util.regex.Pattern
 import java.net.URL
+import scala.Enumeration
 
 
 
@@ -224,7 +225,7 @@ class EntityTypeHandler[T <: Entity](implicit m : Manifest[T])
 }
 
 
-class ImmutableMapTypeHandler[T](implicit th : TypeHandler[T])
+class ImmutableMapTypeHandlerStringKey[T](implicit th : TypeHandler[T])
 	extends NotNullTypeHandler[immutable.Map[String, T]]
 {
 	import scala.collection.JavaConversions.{asJavaMap, mapAsScalaMap}
@@ -248,12 +249,45 @@ class ImmutableMapTypeHandler[T](implicit th : TypeHandler[T])
 	}
 }
 
+
+class ImmutableMapTypeHandlerEnumKey[K <: Enumeration,T](implicit th : TypeHandler[T], mn: Manifest[K])
+		extends NotNullTypeHandler[immutable.Map[K#Value, T]]
+{
+	import scala.collection.JavaConversions.{asJavaMap, mapAsScalaMap}
+
+	def fromDBObjectNN (obj: Object, partial: Boolean = false) = obj match {
+		case obj: DBObject => {
+			mapAsScalaMap(obj.toMap).asInstanceOf[mutable.Map[String, Object]]
+					.foldLeft(Map[K#Value, T]()) {
+				case (m, (k, ov)) => m + ((EnumTypeHandler.fromString[K](k), th.fromDBObject(ov)))
+			}
+		}
+		case x => throw unexpectedType(x.getClass, classOf[DBObject])
+	}
+
+	def toDBObjectNN (map: immutable.Map[K#Value, T]) = {
+		val o = new BasicDBObject()
+		map.foreach {
+			case (k, v) => o.put(k.toString, th.toDBObject(v))
+		}
+		o
+	}
+}
+
+
+object EnumTypeHandler {
+	def fromString[T <: Enumeration](s: String)(implicit m: Manifest[T]) =
+		m.runtimeClass.getField("MODULE$").get(null).asInstanceOf[T].withName(s)
+}
+
+
 class EnumTypeHandler [T <:Enumeration](implicit m: Manifest[T])
 		extends NotNullTypeHandler[T#Value]
 {
 	def fromDBObjectNN(dbo: Object, partial: Boolean = false) = dbo match {
 		case s:String => 	{
-			m.runtimeClass.getField("MODULE$").get(null).asInstanceOf[T].withName(s)
+			EnumTypeHandler.fromString(s)
+//			m.runtimeClass.getField("MODULE$").get(null).asInstanceOf[T].withName(s)
 		}
 	}
 
@@ -430,7 +464,11 @@ package object handlers {
 
 	implicit def setTypeHandler[T](implicit th : TypeHandler[T]) = new SetTypeHandler[T]
 
-  implicit def immutableMapTypeHandler[T](implicit th : TypeHandler[T]) =	new ImmutableMapTypeHandler[T]
+  implicit def immutableMapTypeHandlerStringKey[T](implicit th : TypeHandler[T]) =
+	  new ImmutableMapTypeHandlerStringKey[T]
+
+	implicit def immutableMapTypeHandlerEnumKey[K <: Enumeration, V](implicit th : TypeHandler[V], m: Manifest[K]) =
+		new ImmutableMapTypeHandlerEnumKey[K, V]
 
 	implicit def referenceTypeHandler[T <: Entity with EntityId](implicit m: Manifest[T]) =	new
 					ReferenceTypeHandler[T]
