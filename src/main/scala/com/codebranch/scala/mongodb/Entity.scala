@@ -7,9 +7,9 @@ import handlers._
 import org.bson.types.ObjectId
 
 
-trait EntityMetadata
+trait EntityMetadata extends Serializable
 {
-  class Metadata {
+  class Metadata extends Serializable {
     var fieldsMap = new HashMap[String, Field[_]]
   }
 
@@ -42,7 +42,7 @@ trait FieldValidator extends EntityMetadata {
 }
 
 
-class Entity extends EntityMetadata with Cloneable
+class Entity extends EntityMetadata with Cloneable with Serializable
 {
   import Entity.Field._
 

@@ -11,7 +11,7 @@ class Field[T](val key : String,
                validator: Seq[Option[T] => Option[String]] = Seq())
               (implicit val tm : Manifest[T],
                th : TypeHandler[Option[T]],
-               val entityMetadata : EntityMetadata#Metadata)
+               val entityMetadata : EntityMetadata#Metadata) extends Serializable
 {
 	thisField =>
 

@@ -38,7 +38,7 @@ import UnexpectedType._
 
 
 
-abstract class TypeHandler[T]
+abstract class TypeHandler[T] extends Serializable
 {
 	def fromDBObject(dbo : Object, partial: Boolean = false) : T
 	def toDBObject(v : T) : Object
