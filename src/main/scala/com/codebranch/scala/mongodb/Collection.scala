@@ -32,7 +32,7 @@ class Collection(val jColl: jmdb.DBCollection)
     find[T](toDBObject(query), toDBObject(fields))
 
 
-  @Deprecated
+  @deprecated(message = "use find(query, fields): Cursor[T] instead", since = "1.0")
 	def find[T](query: Value.Map, limit: Int, offset: Int, sorter: DBObject)(implicit th: TypeHandler[T]) = {
 		val obj = Value(query).dbObject.asInstanceOf[DBObject]
     Logger.debug("Collection.find(map[String,Any]). " +

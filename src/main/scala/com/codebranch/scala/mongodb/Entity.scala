@@ -5,6 +5,8 @@ import com.mongodb.{BasicDBObject, DBObject}
 import collection.immutable.HashMap
 import handlers._
 import org.bson.types.ObjectId
+import org.bson.BSONObject
+
 
 
 trait EntityMetadata extends Serializable
@@ -58,7 +60,7 @@ class Entity extends EntityMetadata with Cloneable with Serializable
 		dbObject
 	}
 
-	def fromDBObject(dbObject : DBObject, partial: Boolean = false) : this.type =
+	def fromDBObject(dbObject : BSONObject, partial: Boolean = false) : this.type =
 	{
     entityMetadata.fieldsMap foreach {
       case (k, v) => try {
@@ -117,7 +119,7 @@ object Entity {
     val ClassName = "className"
   }
 
-  def apply(dbo : DBObject, partial: Boolean = false) : Entity =
+  def apply(dbo : BSONObject, partial: Boolean = false) : Entity =
     dbo.get(Field.ClassName) match {
       case className : String => {
         try {

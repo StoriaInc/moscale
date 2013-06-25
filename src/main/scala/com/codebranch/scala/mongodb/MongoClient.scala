@@ -157,6 +157,8 @@ object Query
 
   def notExists = exists(false)
 
+  def ne(v : Value) = $ne -> v
+
   val $exists = "$exists"
 
   val $all = "$all"
@@ -182,6 +184,8 @@ object Query
   val $lte = "$lte"
 
   val $gte = "$gte"
+
+  val $ne = "$ne"
 }
 
 trait MongoSupport
