@@ -35,7 +35,7 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
 		collection.find[T](query, fields)
 
 
-  @Deprecated
+  @deprecated("Use find(query, fields) instead", since = "alpha")
   def find
   (query: Map[String, Value], limit: Int, offset: Int, sorter: Map[String, Int])
   (implicit mongo: MongoClient)
