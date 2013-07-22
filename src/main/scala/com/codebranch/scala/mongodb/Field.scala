@@ -70,6 +70,8 @@ class Field[T](val key : String,
 
 object Field
 {
+  import scala.language.implicitConversions
+
   def apply[T](key : String,
                default : Option[T] = None,
                validator: Seq[Option[T] => Option[String]] = Seq())
@@ -77,5 +79,7 @@ object Field
                th : TypeHandler[Option[T]],
                entityMetadata : EntityMetadata#Metadata)
   = new Field[T](key, default, validator)
+
+  implicit def field2Option[T](f: Field[T]): Option[T] = f.toOption
 }
 

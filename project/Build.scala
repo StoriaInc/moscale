@@ -26,6 +26,7 @@ object ApplicationBuild extends Build
     "org.mongodb" % "mongo-java-driver" % "2.11.0",
 		"ch.qos.logback" % "logback-classic" % "1.0.7",
 		"org.scala-lang" % "scala-reflect" % scalaVer,
+    "com.basho.riak" % "riak-client" % "1.1.1",
 		// testing libs
 		"org.scalatest" %% "scalatest" % "1.9" % "test",
     "org.specs2" %% "specs2" % "1.14" % "test")
