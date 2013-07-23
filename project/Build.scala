@@ -4,7 +4,7 @@ import Keys._
 
 object ApplicationBuild extends Build
 {
-	val scalaVer = "2.10.2"
+	val scalaVer = "2.10.0"
 
 	val appName         = "mongo"
 	val buildSettings = Defaults.defaultSettings ++ Seq (
