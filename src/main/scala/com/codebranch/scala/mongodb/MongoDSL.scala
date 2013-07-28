@@ -1,0 +1,190 @@
+package com.codebranch.scala.mongodb
+
+import com.mongodb.{BasicDBList, BasicDBObject}
+import java.lang.{Integer => JInteger, Boolean => JBoolean, Long => JLong}
+import Query.Expression
+
+class DBObjectGen(key: String) {
+
+  import DBObjectGen._
+  import MongoDSL.$array
+
+  def $eq[T](value: T)(implicit th: TypeHandler[T]): Expression = compose(key, th.toDBObject(value))
+
+  def $eq[T](value: Field[T])(implicit th: TypeHandler[T]): Expression = compose(key, th.toDBObject(value.get))
+
+  @inline def --[T](value: T)(implicit th: TypeHandler[T]): Expression = $eq(value)
+
+  @inline def --[T](value: Field[T])(implicit th: TypeHandler[T]): Expression = $eq(value)
+
+  def $ne[T](value: T)(implicit th: TypeHandler[T]): Expression = compose(key, compose("$ne", th.toDBObject(value)))
+
+  def $ne[T](value: Field[T])(implicit th: TypeHandler[T]): Expression = compose(key, compose("$ne", th.toDBObject(value.get)))
+
+  def $gt(value: JLong): Expression = compose(key, compose("$gt", value))
+
+  @inline def >(value: Long): Expression = $gt(value)
+
+  def $gte(value: JLong): Expression = compose(key, compose("$gte", value))
+
+  @inline def >=(value: Long): Expression = $gte(value)
+
+  def $lt(value: JLong): Expression = compose(key, compose("$lt", value))
+
+  @inline def <(value: Long): Expression = $lt(value)
+
+//  def $lte(value: JInteger): Expression = compose(key, compose("$lte", value))
+
+  def $lte(value: JLong): Expression = compose(key, compose("$lte", value))
+
+//  @inline def <=(value: Int): Expression = $lte(value)
+
+  @inline def <=(value: Long): Expression = $lte(value)
+
+  def $size(value: JLong): Expression = compose(key, compose("$size", value))
+
+  def $mod(divisor: JInteger, remainder: JInteger): Expression = compose(key, compose("$mod", {
+    val list = new BasicDBList
+    list.add(divisor)
+    list.add(remainder)
+    list
+  }))
+
+  def $exists(value: JBoolean): Expression = compose(key, compose("$exists", value))
+
+  @inline def isDefined: Expression = $exists(true)
+
+  @inline def isEmpty: Expression = $exists(false)
+
+//  def $in[T](values: T*)(implicit th: TypeHandler[T]): Expression = groupOp("$in", values: _*)
+  def $in[T](values: Seq[T])(implicit th: TypeHandler[T]): Expression = groupOp("$in", values)
+//  def $in[T](values: Field[T]*)(implicit th: TypeHandler[T]): Expression = groupOp("$in", values: _*)
+//  def $in[T](values: Seq[Field[T]])(implicit th: TypeHandler[T], m: Manifest[Field[T]]): Expression = groupOp("$in", values)
+
+//  def $nin[T](values: T*)(implicit th: TypeHandler[T]): Expression = groupOp("$nin", values: _*)
+  def $nin[T](values: Seq[T])(implicit th: TypeHandler[T]): Expression = groupOp("$nin", values)
+//  def $nin[T](values: Field[T]*)(implicit th: TypeHandler[T]): Expression = groupOp("$nin", values: _*)
+//  def $nin[T](values: Seq[Field[T]])(implicit th: TypeHandler[T], m: Manifest[Field[T]]): Expression = groupOp("$nin", values)
+
+//  def $all[T](values: T*)(implicit th: TypeHandler[T]): Expression = groupOp("$all", values: _*)
+  def $all[T](values: Seq[T])(implicit th: TypeHandler[T]): Expression = groupOp("$all", values)
+//  def $all[T](values: Field[T]*)(implicit th: TypeHandler[T]): Expression = groupOp("$all", values: _*)
+//  def $all[T](values: Seq[Field[T]])(implicit th: TypeHandler[T], m: Manifest[Field[T]]): Expression = groupOp("$all", values)
+
+//  @inline private def groupOp[T](name: String, values: T*)(implicit th: TypeHandler[T]): Expression =
+//    compose(key, compose(name, $array(values: _*)))
+
+  @inline private def groupOp[T](name: String, values: Seq[T])(implicit th: TypeHandler[T]): Expression =
+    compose(key, compose(name, $array(values)))
+
+//  @inline private def groupOp[T](name: String, values: Field[T]*)(implicit th: TypeHandler[T]): Expression =
+//    groupOp(name, values.map(_.get): _*)
+//
+//  @inline private def groupOp[T](name: String, values: Seq[Field[T]])(implicit th: TypeHandler[T]): Expression =
+//    groupOp(name, values.map(_.get))
+
+}
+
+object DBObjectGen {
+
+  def compose(key: String, expr: Object): Expression =
+    new BasicDBObject(key, expr)
+
+  def composeExprs(expr: Expression, exprs: Expression*): Expression = {
+    import scala.collection.JavaConversions.asScalaSet
+    val result = new BasicDBObject()
+    for (key <- expr.keySet()) {
+      result.append(key, expr.get(key))
+    }
+    for (expr <- exprs; key <- expr.keySet()) {
+      result.append(key, expr.get(key))
+    }
+    result
+  }
+
+}
+
+class ExprGen(expr: Expression) {
+
+  import MongoDSL._
+
+  def &&(other: Expression): Expression =
+    $and(expr, other)
+
+  def ||(other: Expression): Expression =
+    $or(expr, other)
+
+  def unary_! : Expression =
+    $not(expr)
+}
+
+object MongoDSL {
+
+  import DBObjectGen._
+  import scala.language.implicitConversions
+  import handlers._
+
+  implicit def String2DBObjectGen(s: String) =
+    new DBObjectGen(s)
+
+  implicit def Expression2ExprGen(expr: Expression) =
+    new ExprGen(expr)
+
+  def $array[T](values: Seq[T])(implicit th: TypeHandler[T]): Expression = {
+    val list = new BasicDBList
+    values.filter(_ != null).foreach(e => list.add(th.toDBObject(e)))
+    list
+  }
+
+  def $array(expr: Expression, exprs: Expression*): Expression = {
+    if (exprs.isEmpty)
+      expr
+    else {
+      val list = new BasicDBList
+      if (expr != null) list.add(expr)
+      exprs.filter(_ != null).foreach(e => list.add(e))
+      list
+    }
+  }
+
+  def $and(expr: Expression, exprs: Expression*): Expression =
+    compose("$and", $array(expr, exprs: _*))
+
+  def $or(expr: Expression, exprs: Expression*): Expression =
+    compose("$or", $array(expr, exprs: _*))
+
+  def $each[T](values: Seq[T])(implicit th: TypeHandler[T]): Expression =
+    compose("$each", $array(values))
+
+  def $nor(expr: Expression, exprs: Expression*): Expression =
+    compose("$nor", $array(expr, exprs: _*))
+
+  def $not(expr: Expression): Expression =
+    compose("$not", expr)
+
+  //=====================================================================================
+  // Update-related
+  //=====================================================================================
+
+  def $inc(expr: Expression, exprs: Expression*): Expression =
+    compose("$inc", composeExprs(expr, exprs: _*))
+
+  def $set(expr: Expression, exprs: Expression*): Expression =
+    compose("$set", composeExprs(expr, exprs: _*))
+
+  def $unset(expr: Expression, exprs: Expression*): Expression =
+    compose("$unset", composeExprs(expr, exprs: _*))
+
+  def $addToSet(expr: Expression, exprs: Expression*): Expression =
+    compose("$addToSet", composeExprs(expr, exprs: _*))
+
+  def $push(expr: Expression, exprs: Expression*): Expression =
+    compose("$push", composeExprs(expr, exprs: _*))
+
+  def $pull(expr: Expression, exprs: Expression*): Expression =
+    compose("$pull", composeExprs(expr, exprs: _*))
+
+  def $pullAll(expr: Expression, exprs: Expression*): Expression =
+    compose("$pullAll", composeExprs(expr, exprs: _*))
+
+}

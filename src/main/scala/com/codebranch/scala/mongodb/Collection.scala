@@ -21,25 +21,14 @@ class Collection(val jColl: jmdb.DBCollection)
   def find[T](implicit th : TypeHandler[T]) : Cursor[T] = find[T](null : DBObject, null : DBObject)
 
 
-	def find[T]
-  (query: DBObject, fields : DBObject)
-  (implicit th: TypeHandler[T])
-  : Cursor[T] =
+	def find[T](query: DBObject, fields : DBObject)(implicit th: TypeHandler[T]): Cursor[T] = {
+    Logger.debug("Find. Query = %s" format query)
     new Cursor[T](jColl.find(query, fields))
+  }
 
 
   def find[T](query : Value.Map, fields : Map[String, Boolean] = null)(implicit th: TypeHandler[T]) : Cursor[T] =
     find[T](toDBObject(query), toDBObject(fields))
-
-
-  @deprecated(message = "use find(query, fields): Cursor[T] instead", since = "1.0")
-	def find[T](query: Value.Map, limit: Int, offset: Int, sorter: DBObject)(implicit th: TypeHandler[T]) = {
-		val obj = Value(query).dbObject.asInstanceOf[DBObject]
-    Logger.debug("Collection.find(map[String,Any]). " +
-                 "Query: %s, limit: %d, offset: %d, sorter: %s".
-                     format (obj.toString,limit,offset,sorter.toString))
-    new Cursor[T](jColl.find(obj)) skip (offset) limit (limit) sort (sorter)
-  }
 
 
   def findOne[T](query: DBObject, fields : DBObject, order : DBObject)(implicit th: TypeHandler[T]) : Option[T] = {
@@ -57,8 +46,8 @@ class Collection(val jColl: jmdb.DBCollection)
     findOne[T](toDBObject(query), toDBObject(fields), toDBObject(order))
 
 
-  def findById[T](id : Value)(implicit th: TypeHandler[T]) : Option[T] =
-    findOne[T](Query(EntityId.Field.Id -> id))
+//  def findById[T](id : Value)(implicit th: TypeHandler[T]) : Option[T] =
+//    findOne[T](Query(EntityId.Field.Id -> id))
 
 
   def save(dbo : DBObject) : WriteResult = jColl.save(dbo)

@@ -2,7 +2,7 @@ package com.codebranch.scala.mongodb
 
 import scala.language.implicitConversions
 
-abstract class Value
+private[mongodb] abstract class Value
 {
 	val dbObject : Object
 
@@ -10,7 +10,7 @@ abstract class Value
 }
 
 
-object Value
+private[mongodb] object Value
 {
 	implicit def asValue[T](v : T)(implicit th : TypeHandler[T]) : Value =
 		new Value {

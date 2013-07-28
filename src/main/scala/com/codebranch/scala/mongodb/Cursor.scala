@@ -2,6 +2,7 @@ package com.codebranch.scala.mongodb
 
 import com.{mongodb => jmdb}
 import handlers._
+import com.mongodb.DBObject
 
 /**
  * User: alexey
@@ -22,9 +23,11 @@ class Cursor[T](val jmdbCursor: jmdb.DBCursor)(implicit th: TypeHandler[T]) {
 
   def copy : Cursor[T] = new Cursor[T](jmdbCursor.copy)
 
-  def sort(sorter : jmdb.DBObject) : Cursor[T] = new Cursor[T](jmdbCursor.copy.sort(sorter))
+//  def sort(sorter : jmdb.DBObject) : Cursor[T] = new Cursor[T](jmdbCursor.copy.sort(sorter))
 
-  def sort(sorter : Value.Map) : Cursor[T] = sort(Value(sorter).dbObject.asInstanceOf[jmdb.DBObject])
+  def sort(sorters: DBObject*) : Cursor[T] = new Cursor[T](jmdbCursor.copy.sort(DBObjectGen.composeExprs(sorters.head, sorters.tail: _*)))
+
+//  def sort(sorter : Value.Map) : Cursor[T] = sort(Value(sorter).dbObject.asInstanceOf[jmdb.DBObject])
 
   def skip(n : Int) : Cursor[T] = new Cursor[T](jmdbCursor.copy.skip(n))
 

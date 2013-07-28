@@ -46,7 +46,7 @@ class TestComplexEntity extends Entity with EntityId {
 	val name = Field[String]("name")
 	val children = Field[List[TestEntity]]("children")
 	val leaf = Field[TestEntity]("leaf")
-	val refF = Field[Reference[TestEntity]]("child")
+//	val refF = Field[Reference[TestEntity]]("child")
 }
 @CollectionEntity(databaseName = "test", collectionName = "TestEntityWithValidator")
 class TestEntityWithValidator extends Entity with FieldValidator {
@@ -179,20 +179,20 @@ class TestMongoDB extends Specification with BeforeAfter {
 		}
 
 
-		"Reference test" in {
-			val te = new TestEntity
-			te.intF := Option(3)
-			te.strF := "uniq"
-			val ce = new TestComplexEntity
-			ce.refF := Some(Reference(te))
-			mongo.getCollection[TestEntity].save(te)
-
-			val obj = ce.toDBObject
-			val e2 = new TestComplexEntity
-			e2.fromDBObject(obj)
-      e2.refF.get.fetch must beEqualTo(Some(te))
-//			e2.refF.get.get.fetch.get must beEqualTo(te)
-		}
+//		"Reference test" in {
+//			val te = new TestEntity
+//			te.intF := Option(3)
+//			te.strF := "uniq"
+//			val ce = new TestComplexEntity
+//			ce.refF := Some(Reference(te))
+//			mongo.getCollection[TestEntity].save(te)
+//
+//			val obj = ce.toDBObject
+//			val e2 = new TestComplexEntity
+//			e2.fromDBObject(obj)
+//      e2.refF.get.fetch must beEqualTo(Some(te))
+////			e2.refF.get.get.fetch.get must beEqualTo(te)
+//		}
 
 		"Equality test" in {
 			val e = new TestEntity

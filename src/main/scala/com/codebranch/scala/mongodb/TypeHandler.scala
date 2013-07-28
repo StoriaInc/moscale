@@ -364,19 +364,19 @@ class SetTypeHandler[T](implicit th : TypeHandler[T])
 	}
 }
 
-class ReferenceTypeHandler[T <: EntityId](implicit th : TypeHandler[T], m: Manifest[T])
-		extends NotNullTypeHandler[Reference[T]]
-{
-	def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
-		case v: DBObject => {
-			Reference.fromDBObject(v)
-		}
-		case x => throw unexpectedType(x.getClass, classOf[DBObject])
-	}
-
-
-	def toDBObjectNN(v: Reference[T]) = v.toDBObject
-}
+//class ReferenceTypeHandler[T <: EntityId](implicit th : TypeHandler[T], m: Manifest[T])
+//		extends NotNullTypeHandler[Reference[T]]
+//{
+//	def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
+//		case v: DBObject => {
+//			Reference.fromDBObject(v)
+//		}
+//		case x => throw unexpectedType(x.getClass, classOf[DBObject])
+//	}
+//
+//
+//	def toDBObjectNN(v: Reference[T]) = v.toDBObject
+//}
 
 
 abstract class ConvertingTypeHandler[T, StorableType](implicit storableTH : TypeHandler[StorableType])
@@ -391,49 +391,6 @@ abstract class ConvertingTypeHandler[T, StorableType](implicit storableTH : Type
 
 	override def toDBObjectNN(v: T) = storableTH.toDBObject(convertToStorableType(v))
 }
-
-
-
-/*
-class AnyObjectTypeHandler(val typeClass : Class[_]) extends TypeHandler[Object]
-{
-	import scala.collection.JavaConversions.mapAsScalaMap
-
-	def fromDBObject(dbo: Object) : Object =
-		dbo match {
-			case dbo: DBObject => {
-				val obj = typeClass.newInstance()
-				var javaStyle = true
-				var scalaStyle = true
-
-				typeClass.getAnnotation[MongoObject] match {
-					case null => ()
-					case mo : MongoObject =>
-						javaStyle = mo.javaStyle
-						scalaStyle = mo.scalaStyle
-				}
-
-				dbo.toMap.foreach {
-					case (k : String, v : Object) =>
-
-				}
-			}
-			case x => throw unexpectedType(x.getClass, classOf[DBObject])
-		}
-
-	def toDBObject(v: Object) : Object = null
-}
-*/
-
-
-/*class ObjectTypeHandler[T <: Object](implicit m : Manifest[T]) extends TypeHandler[T]
-{
-	def fromDBObject(dbo: Object) : T = {
-
-	}
-
-	def toDBObject(v: T) : Object = null
-}*/
 
 
 package object handlers {
@@ -470,8 +427,8 @@ package object handlers {
 	implicit def immutableMapTypeHandlerEnumKey[K <: Enumeration, V](implicit th : TypeHandler[V], m: Manifest[K]) =
 		new ImmutableMapTypeHandlerEnumKey[K, V]
 
-	implicit def referenceTypeHandler[T <: Entity with EntityId](implicit m: Manifest[T]) =	new
-					ReferenceTypeHandler[T]
+//	implicit def referenceTypeHandler[T <: Entity with EntityId](implicit m: Manifest[T]) =	new
+//					ReferenceTypeHandler[T]
 
 //  implicit def mutableMapTypeHandler[T](implicit th : TypeHandler[T]) : TypeHandler[mutable.Map[String,T]] =
 //    new MutableMapTypeHandler[T]
