@@ -147,6 +147,10 @@ object MongoDSL {
     }
   }
 
+  def $value[T](value: T)(implicit th: TypeHandler[T]): Expression = {
+    th.toDBObject(value).asInstanceOf[Expression]
+  }
+
   def $and(expr: Expression, exprs: Expression*): Expression =
     compose("$and", $array(expr, exprs: _*))
 
@@ -199,11 +203,11 @@ object MongoDSL {
   def $match(expr: Expression, exprs: Expression*): Expression =
     compose("$match", $array(expr, exprs: _*))
 
-  def $limit(expr: Expression, exprs: Expression*): Expression =
-    compose("$limit", $array(expr, exprs: _*))
+  def $limit(value: JLong): Expression =
+    compose("$limit", value)
 
-  def $skip(expr: Expression, exprs: Expression*): Expression =
-    compose("$skip", $array(expr, exprs: _*))
+  def $skip(value: JLong): Expression =
+    compose("$skip", value)
 
   def $unwind(expr: Expression, exprs: Expression*): Expression =
     compose("$unwind", $array(expr, exprs: _*))
@@ -214,22 +218,22 @@ object MongoDSL {
   def $sort(expr: Expression, exprs: Expression*): Expression =
     compose("$sort", $array(expr, exprs: _*))
 
-  def $sum(expr: Expression, exprs: Expression*): Expression =
-    compose("$sum", $array(expr, exprs: _*))
+  def $sum[T](values: T*)(implicit th: TypeHandler[T]): Expression =
+    compose("$sum", $array[T](values))
 
-  def $add(expr: Expression, exprs: Expression*): Expression =
-    compose("$add", $array(expr, exprs: _*))
+  def $add[T](values: T*)(implicit th: TypeHandler[T]): Expression =
+    compose("$add", $array[T](values))
 
-  def $multiply(expr: Expression, exprs: Expression*): Expression =
-    compose("$multiply", $array(expr, exprs: _*))
+  def $multiply[T](values: T*)(implicit th: TypeHandler[T]): Expression =
+    compose("$multiply", $array[T](values))
 
-  def $min(expr: Expression, exprs: Expression*): Expression =
-    compose("$min", $array(expr, exprs: _*))
+  def $min[T](values: T*)(implicit th: TypeHandler[T]): Expression =
+    compose("$min", $array[T](values))
 
-  def $max(expr: Expression, exprs: Expression*): Expression =
-    compose("$max", $array(expr, exprs: _*))
+  def $max[T](values: T*)(implicit th: TypeHandler[T]): Expression =
+    compose("$max", $array[T](values))
 
-  def $avg(expr: Expression, exprs: Expression*): Expression =
-    compose("$avg", $array(expr, exprs: _*))
+  def $avg[T](values: T*)(implicit th: TypeHandler[T]): Expression =
+    compose("$avg", $array[T](values))
 
 }
