@@ -28,8 +28,8 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
 		collection.find[T](query, null)
 
 
-	def find2(query: Value.Map)(implicit mongo : MongoClient) : Cursor[T] =
-		collection.find[T](query)
+//	def find2(query: Value.Map)(implicit mongo : MongoClient) : Cursor[T] =
+//		collection.find[T](query)
 
 
 	def findOne(query : DBObject)(implicit mongo : MongoClient): Option[T] =
@@ -80,8 +80,8 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
     collection.remove(entity)
 
 
-//  def aggregate(query: VMap, additionalQueries: VMap*)(implicit mongo: MongoClient) =
-//    collection.aggregate(query, additionalQueries:_*)
+  def aggregate(first: DBObject, others: DBObject*)(implicit mongo: MongoClient) =
+    collection.aggregate(first, others:_*)
 
 
   def ensureIndex

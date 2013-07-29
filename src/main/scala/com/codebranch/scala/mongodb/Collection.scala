@@ -151,8 +151,8 @@ class Collection(val jColl: jmdb.DBCollection)
     remove(toDBObject(entity))
 
 
-  def aggregate(query: Value.Map, additionalQueries: Value.Map*) : AggregationOutput =
-    aggregate(toDBObject(query), additionalQueries.map(toDBObject(_)):_*)
+//  def aggregate(query: Value.Map, additionalQueries: Value.Map*) : AggregationOutput =
+//    aggregate(toDBObject(query), additionalQueries.map(toDBObject(_)):_*)
 
 
   def aggregate(query: DBObject, additionalQueries: DBObject*): AggregationOutput = {

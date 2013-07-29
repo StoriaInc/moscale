@@ -187,4 +187,49 @@ object MongoDSL {
   def $pullAll(expr: Expression, exprs: Expression*): Expression =
     compose("$pullAll", composeExprs(expr, exprs: _*))
 
+
+  //=====================================================================================
+  // Aggregation-related
+  //=====================================================================================
+
+
+  def $project(expr: Expression, exprs: Expression*): Expression =
+    compose("$project", $array(expr, exprs: _*))
+
+  def $match(expr: Expression, exprs: Expression*): Expression =
+    compose("$match", $array(expr, exprs: _*))
+
+  def $limit(expr: Expression, exprs: Expression*): Expression =
+    compose("$limit", $array(expr, exprs: _*))
+
+  def $skip(expr: Expression, exprs: Expression*): Expression =
+    compose("$skip", $array(expr, exprs: _*))
+
+  def $unwind(expr: Expression, exprs: Expression*): Expression =
+    compose("$unwind", $array(expr, exprs: _*))
+
+  def $group(expr: Expression, exprs: Expression*): Expression =
+    compose("$group", $array(expr, exprs: _*))
+
+  def $sort(expr: Expression, exprs: Expression*): Expression =
+    compose("$sort", $array(expr, exprs: _*))
+
+  def $sum(expr: Expression, exprs: Expression*): Expression =
+    compose("$sum", $array(expr, exprs: _*))
+
+  def $add(expr: Expression, exprs: Expression*): Expression =
+    compose("$add", $array(expr, exprs: _*))
+
+  def $multiply(expr: Expression, exprs: Expression*): Expression =
+    compose("$multiply", $array(expr, exprs: _*))
+
+  def $min(expr: Expression, exprs: Expression*): Expression =
+    compose("$min", $array(expr, exprs: _*))
+
+  def $max(expr: Expression, exprs: Expression*): Expression =
+    compose("$max", $array(expr, exprs: _*))
+
+  def $avg(expr: Expression, exprs: Expression*): Expression =
+    compose("$avg", $array(expr, exprs: _*))
+
 }
