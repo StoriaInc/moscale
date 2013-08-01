@@ -198,10 +198,10 @@ object MongoDSL {
 
 
   def $project(expr: Expression, exprs: Expression*): Expression =
-    compose("$project", $array(expr, exprs: _*))
+    compose("$project", composeExprs(expr, exprs: _*))
 
   def $match(expr: Expression, exprs: Expression*): Expression =
-    compose("$match", $array(expr, exprs: _*))
+    compose("$match", composeExprs(expr, exprs: _*))
 
   def $limit(value: JLong): Expression =
     compose("$limit", value)
@@ -210,13 +210,13 @@ object MongoDSL {
     compose("$skip", value)
 
   def $unwind(expr: Expression, exprs: Expression*): Expression =
-    compose("$unwind", $array(expr, exprs: _*))
+    compose("$unwind", composeExprs(expr, exprs: _*))
 
   def $group(expr: Expression, exprs: Expression*): Expression =
-    compose("$group", $array(expr, exprs: _*))
+    compose("$group", composeExprs(expr, exprs: _*))
 
   def $sort(expr: Expression, exprs: Expression*): Expression =
-    compose("$sort", $array(expr, exprs: _*))
+    compose("$sort", composeExprs(expr, exprs: _*))
 
   def $sum[T](values: T*)(implicit th: TypeHandler[T]): Expression =
     compose("$sum", $array[T](values))

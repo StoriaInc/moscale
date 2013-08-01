@@ -80,8 +80,13 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
     collection.remove(entity)
 
 
-  def aggregate(first: DBObject, others: DBObject*)(implicit mongo: MongoClient) =
-    collection.aggregate(first, others:_*)
+  def aggregate(first: DBObject, others: DBObject*)(implicit mongo: MongoClient) = {
+    Logger.debug("AGGREGATE QUERY:")
+    Logger.debug(first.toString)
+    val result = collection.aggregate(first, others:_*)
+    others.foreach(query => Logger.debug(query.toString))
+    result
+  }
 
 
   def ensureIndex
