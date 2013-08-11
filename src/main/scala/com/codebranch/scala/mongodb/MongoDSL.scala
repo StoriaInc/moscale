@@ -151,11 +151,37 @@ object MongoDSL {
     th.toDBObject(value).asInstanceOf[Expression]
   }
 
-  def $and(expr: Expression, exprs: Expression*): Expression =
-    compose("$and", $array(expr, exprs: _*))
+  def $and(expr: Expression, exprs: Expression*): Expression = {
+    val allExprs = exprs :+ expr
+    val andContainer = allExprs.find(_ match {
+      case bdbo: BasicDBObject if bdbo.keySet.size == 1 && bdbo.containsField("$and") => true
+      case _ => false
+    })
+    andContainer match {
+      case Some(container) =>
+        val list = container.get("$and").asInstanceOf[BasicDBList]
+        allExprs.filter(_ != container).foreach(list.add)
+        container
+      case _ =>
+        compose("$and", $array(expr, exprs: _*))
+    }
+  }
 
-  def $or(expr: Expression, exprs: Expression*): Expression =
-    compose("$or", $array(expr, exprs: _*))
+  def $or(expr: Expression, exprs: Expression*): Expression = {
+    val allExprs = exprs :+ expr
+    val orContainer = allExprs.find(_ match {
+      case bdbo: BasicDBObject if bdbo.keySet.size == 1 && bdbo.containsField("$or") => true
+      case _ => false
+    })
+    orContainer match {
+      case Some(container) =>
+        val list = container.get("$or").asInstanceOf[BasicDBList]
+        allExprs.filter(_ != container).foreach(list.add)
+        container
+      case _ =>
+        compose("$or", $array(expr, exprs: _*))
+    }
+  }
 
   def $each[T](values: Seq[T])(implicit th: TypeHandler[T]): Expression =
     compose("$each", $array(values))
