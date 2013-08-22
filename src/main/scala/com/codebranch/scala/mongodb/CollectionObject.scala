@@ -51,8 +51,13 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
   def update
   (query : DBObject, obj : DBObject, upsert : Boolean = false, multi : Boolean = false)
   (implicit mongo : MongoClient)
-  : WriteResult =
+  : WriteResult = {
+    Logger.debug("UPDATE QUERY:")
+    Logger.debug(query.toString)
+    Logger.debug("OBJECT")
+    Logger.debug(obj.toString)
     collection.update(query, obj, upsert, multi)
+  }
 
 
 //  def update
