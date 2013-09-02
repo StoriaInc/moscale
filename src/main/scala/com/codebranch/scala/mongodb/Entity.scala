@@ -1,26 +1,12 @@
 package com.codebranch.scala.mongodb
 
-
 import com.mongodb.{BasicDBObject, DBObject}
-import collection.immutable.HashMap
 import handlers._
 import org.bson.types.ObjectId
 import org.bson.BSONObject
 
 
-
-trait EntityMetadata extends Serializable
-{
-  class Metadata extends Serializable {
-    var fieldsMap = new HashMap[String, Field[_]]
-  }
-
-  implicit lazy val entityMetadata : Metadata = new Metadata
-}
-
-
-trait EntityId extends EntityMetadata
-{
+trait EntityId { this: Entity =>
   import EntityId.Field.Id
   val id = Field(Id, Some(new ObjectId()))
 }
@@ -32,37 +18,36 @@ object EntityId {
   }
 }
 
-trait FieldValidator extends EntityMetadata {
-  def isValid = validate.isEmpty
-  def validate: Map[String, Seq[String]] = entityMetadata.fieldsMap map {
-    case (k, f) =>
-       (k -> f.validate)
-  } filterNot {
-    case (k, e) =>
-      e.isEmpty
-  }
+
+trait EntityValidator { this: Entity =>
+  private val validators = new collection.mutable.HashMap[String, () => Boolean]
+  protected def validator(name: String)(validator: => Boolean): Unit =
+    validators += name -> {() => validator}
+
+  def validate: List[String] =
+    validators.flatMap { case (k,v) =>
+      val result = v()
+      if (result) None else Some(k)
+    }.toList
 }
 
-
-class Entity extends EntityMetadata with Cloneable with Serializable
-{
+class Entity extends Cloneable with Serializable {
   import Entity.Field._
 
   val className = Field[String](ClassName, Some(this.getClass.getName))
+  val fieldsMap = new collection.mutable.HashMap[String, Field[_]]
 
-	def toDBObject : DBObject =
-	{
+	def toDBObject : DBObject = {
 		val dbObject = new BasicDBObject
-		entityMetadata.fieldsMap foreach {
+		fieldsMap foreach {
 			case (k, v) =>
 				dbObject.put(v.key, v.toDBObject)
 		}
 		dbObject
 	}
 
-	def fromDBObject(dbObject : BSONObject, partial: Boolean = false) : this.type =
-	{
-    entityMetadata.fieldsMap foreach {
+	def fromDBObject(dbObject : BSONObject, partial: Boolean = false) : this.type = {
+    fieldsMap foreach {
       case (k, v) => try {
         if (dbObject.containsField(v.key) || !partial)
           v.fromDBObject(dbObject.get(v.key), partial)
@@ -110,6 +95,13 @@ class Entity extends EntityMetadata with Cloneable with Serializable
        " with illegal types in fields"
    }
   }
+
+
+  def Field[T](key: String, default : Option[T] = None)(implicit m : Manifest[T], th : TypeHandler[Option[T]]) =
+    new Field[T](key, default) {
+      thisField => fieldsMap += key -> thisField
+    }
+
 }
 
 

@@ -13,7 +13,7 @@ object ApplicationBuild extends Build
 	val scalaVer = "2.10.2"
 	val appName       = "mongo"
   val isSnapshot = true
-  val version = "1.1" + (if (isSnapshot) "-SNAPSHOT" else "")
+  val version = "1.2" + (if (isSnapshot) "-SNAPSHOT" else "")
 
 	val buildSettings = Defaults.defaultSettings ++ Seq (
     organization := "codebranch",

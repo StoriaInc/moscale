@@ -1,27 +1,8 @@
 package com.codebranch.scala.mongodb
 
-
-import com.mongodb.DBObject
-import com.sun.istack.internal.NotNull
-
-
-
-class Field[T](val key : String,
-               default : Option[T] = None,
-               validator: Seq[Option[T] => Option[String]] = Seq())
-              (implicit val tm : Manifest[T],
-               th : TypeHandler[Option[T]],
-               val entityMetadata : EntityMetadata#Metadata) extends Serializable
-{
-	thisField =>
-
-	entityMetadata.fieldsMap = entityMetadata.fieldsMap + ((key, thisField))
+abstract class Field[T](val key : String, default : Option[T] = None)(implicit val tm : Manifest[T],th : TypeHandler[Option[T]]) extends Serializable {
 
 	private var _value = default
-
-  def validate: Seq[String] = validator flatMap (v => v(_value))
-
-  def isValid: Boolean = validate.isEmpty
 
 	def set(v : Option[T]) {
 		_value = v
@@ -68,17 +49,8 @@ class Field[T](val key : String,
 }
 
 
-object Field
-{
+object Field {
   import scala.language.implicitConversions
-
-  def apply[T](key : String,
-               default : Option[T] = None,
-               validator: Seq[Option[T] => Option[String]] = Seq())
-              (implicit m : Manifest[T],
-               th : TypeHandler[Option[T]],
-               entityMetadata : EntityMetadata#Metadata)
-  = new Field[T](key, default, validator)
 
   implicit def field2Option[T](f: Field[T]): Option[T] = f.toOption
 }

@@ -7,38 +7,20 @@ import com.codebranch.scala.mongodb.handlers._
 
 
 
-class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T], th : TypeHandler[T])
-{
-	//override def jColl(implicit mongo : MongoClient) = mongo.
+class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T], th : TypeHandler[T]) {
 
 	def collection(implicit mongo : MongoClient) =
 		mongo.getCollection[T]
-
 
   def drop()(implicit mongo : MongoClient) {
     collection.drop()
   }
 
-
-//	def find(implicit mongo : MongoClient) : Cursor[T] =
-//		collection.find[T]
-
-
 	def find(query: DBObject)(implicit mongo : MongoClient) : Cursor[T] =
 		collection.find[T](query, null)
 
-
-//	def find2(query: Value.Map)(implicit mongo : MongoClient) : Cursor[T] =
-//		collection.find[T](query)
-
-
 	def findOne(query : DBObject)(implicit mongo : MongoClient): Option[T] =
 		collection.findOne[T](query, null, null)
-
-
-//	def findOne2(query : Map[String, Value])(implicit mongo : MongoClient): Option[T] =
-//    collection.findOne[T](query, null, null)
-
 
   def findById(id: ObjectId)(implicit mongo: MongoClient) : Option[T] =
     findOne(DBObjectGen.compose(EntityId.Field.Id, id))
@@ -47,11 +29,7 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
 
   def insert(entity : T)(implicit mongo : MongoClient) : WriteResult = collection.insert(entity)
 
-
-  def update
-  (query : DBObject, obj : DBObject, upsert : Boolean = false, multi : Boolean = false)
-  (implicit mongo : MongoClient)
-  : WriteResult = {
+  def update(query : DBObject, obj : DBObject, upsert : Boolean = false, multi : Boolean = false)(implicit mongo : MongoClient): WriteResult = {
     Logger.debug("UPDATE QUERY:")
     Logger.debug(query.toString)
     Logger.debug("OBJECT")
@@ -59,31 +37,11 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
     collection.update(query, obj, upsert, multi)
   }
 
-
-//  def update
-//  (query : Value.Map, obj : Value.Map, upsert : Boolean = false, multi : Boolean = false)
-//  (implicit mongo : MongoClient)
-//  : WriteResult =
-//    collection.update(query, obj, upsert = upsert, multi = multi)
-
-
-//  def findAndModify(query : Value.Map, update : Value.Map, order : Map[String, Int] = null,
-//    fields : Map[String, Boolean] = null, upsert : Boolean = false, returnNew : Boolean = false)
-//    (implicit th : TypeHandler[T], mongo : MongoClient): Option[T] =
-//    collection.findAndModify[T](query, update, order = order, fields = fields, upsert = upsert, returnNew = returnNew)
-
-
   def remove(query : DBObject)(implicit mongo : MongoClient) : WriteResult =
     collection.remove(query)
 
-
-//  def remove(query : Value.Map)(implicit mongo : MongoClient) : WriteResult =
-//    collection.remove(query)
-
-
   def remove(entity : T)(implicit mongo : MongoClient) : WriteResult =
     collection.remove(entity)
-
 
   def aggregate(first: DBObject, others: DBObject*)(implicit mongo: MongoClient) = {
     Logger.debug("AGGREGATE QUERY:")
@@ -94,28 +52,17 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
   }
 
 
-  def ensureIndex
-  (keys : Map[String, Int], name : Option[String] = None, unique : Boolean = false)
-  (implicit mongo : MongoClient)
-  {
+  def ensureIndex(keys : Map[String, Int], name : Option[String] = None, unique : Boolean = false)(implicit mongo : MongoClient): Unit = {
     collection.ensureIndex(keys, name, unique)
   }
 
-  def ensureIndex
-  (keys : Map[String, Int], options : Map[String, Value])
-  (implicit mongo : MongoClient)
-  {
+  def ensureIndex(keys : Map[String, Int], options : Map[String, Value])(implicit mongo : MongoClient): Unit = {
     collection.ensureIndex(keys, options)
   }
 
-  def ensureIndex
-  (key : String)
-  (implicit mongo : MongoClient)
-  {
+  def ensureIndex(key : String)(implicit mongo : MongoClient): Unit = {
     collection.ensureIndex(key)
   }
 
   def count(implicit mongo : MongoClient) = collection.count
-
-  def init()(implicit mongo : MongoClient) {}
 }

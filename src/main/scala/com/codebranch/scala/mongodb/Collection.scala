@@ -5,10 +5,9 @@ import jmdb.{WriteResult, DBObject, AggregationOutput}
 import scala.util.control.ControlThrowable
 import handlers._
 
-case class InvalidFields(errors: Map[String, Seq[String]]) extends ControlThrowable
+case class InvalidFields(errors: List[String]) extends ControlThrowable
 
-class Collection(val jColl: jmdb.DBCollection)
-{
+class Collection(val jColl: jmdb.DBCollection) {
   val name = jColl.getName
 
   def count = jColl.count()
@@ -52,21 +51,17 @@ class Collection(val jColl: jmdb.DBCollection)
 
   def save(dbo : DBObject) : WriteResult = jColl.save(dbo)
 
-
-	private def checkValidity[T <: FieldValidator](e :T) {
-		val errors = e.validate
-		if (!errors.isEmpty)
-			throw new InvalidFields(errors)
-	}
-
   def save(dbo : Value.Map) : WriteResult =
     save(toDBObject(dbo))
 
   def save[T <: Entity](entity : T)(implicit th: TypeHandler[T]): WriteResult = {
 	  entity match {
-		  case e: FieldValidator =>
-			  checkValidity(e)
-			  save(toDBObject(e))
+		  case e: EntityValidator =>
+        val invalidFields = e.validate
+			  if (invalidFields.isEmpty)
+			    save(toDBObject(e))
+        else
+          throw new InvalidFields(invalidFields)
 		  case e =>
 			  save(toDBObject(e))
 	  }
@@ -81,9 +76,12 @@ class Collection(val jColl: jmdb.DBCollection)
 
   def insert[T <: Entity](entity : T)(implicit th: TypeHandler[T]) : WriteResult = {
 	  entity match {
-		  case e: FieldValidator =>
-			  checkValidity(e)
-			  save(toDBObject(e))
+		  case e: EntityValidator =>
+        val invalidFields = e.validate
+        if (invalidFields.isEmpty)
+          insert(toDBObject(e))
+        else
+          throw new InvalidFields(invalidFields)
 		  case e =>
 			  insert(toDBObject(e))
 	  }
@@ -96,27 +94,8 @@ class Collection(val jColl: jmdb.DBCollection)
   def update(query : Value.Map, obj : Value.Map, upsert : Boolean = false, multi : Boolean = false) : WriteResult =
     update(toDBObject(query), toDBObject(obj), upsert = upsert, multi = multi)
 
-//  def update[T <: Entity]
-//  (query: Value.Map,
-//   data: T,
-//   upsert: Boolean = false,
-//   multi : Boolean = false)
-//  (implicit th: TypeHandler[T])
-//  : WriteResult =
-//    update(
-//      toDBObject(query),
-//      toDBObject(data),
-//      upsert = upsert, multi = multi)
 
-
-  def findAndModify
-  (query : DBObject,
-   update : DBObject,
-   order : DBObject,
-   fields : DBObject,
-   upsert : Boolean,
-   returnNew : Boolean)
-  : DBObject = {
+  def findAndModify(query: DBObject, update: DBObject, order: DBObject, fields: DBObject, upsert: Boolean, returnNew: Boolean): DBObject = {
     jColl.findAndModify(query, fields, order, false, update, returnNew, upsert)
   }
 
@@ -149,10 +128,6 @@ class Collection(val jColl: jmdb.DBCollection)
 
   def remove[T <: Entity](entity : T)(implicit th : TypeHandler[T]) : WriteResult =
     remove(toDBObject(entity))
-
-
-//  def aggregate(query: Value.Map, additionalQueries: Value.Map*) : AggregationOutput =
-//    aggregate(toDBObject(query), additionalQueries.map(toDBObject(_)):_*)
 
 
   def aggregate(query: DBObject, additionalQueries: DBObject*): AggregationOutput = {
