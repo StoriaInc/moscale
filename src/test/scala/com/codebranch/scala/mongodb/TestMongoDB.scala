@@ -49,11 +49,12 @@ class TestComplexEntity extends Entity with EntityId {
 //	val refF = Field[Reference[TestEntity]]("child")
 }
 @CollectionEntity(databaseName = "test", collectionName = "TestEntityWithValidator")
-class TestEntityWithValidator extends Entity with FieldValidator {
-	val requiredField = Field[String]("required", Some("a"), Seq((s => {
-	val v = "validation error"
-		Some(v)
-	})))
+class TestEntityWithValidator extends Entity with EntityValidator {
+	val requiredField = Field[String]("required", Some("a"))
+
+  validator("validation error") {
+    false
+  }
 }
 
 
@@ -274,8 +275,7 @@ class TestMongoDB extends Specification with BeforeAfter {
 
 		"Do field validation" in {
 			val e = new TestEntityWithValidator
-			e.requiredField.validate
-			e.requiredField.isValid must beFalse
+			e.validate.size must beGreaterThan(0)
 		}
 
 		"Throw validation exception" in {
