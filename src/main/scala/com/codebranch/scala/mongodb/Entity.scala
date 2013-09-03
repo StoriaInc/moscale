@@ -8,7 +8,7 @@ import org.bson.BSONObject
 
 trait EntityId { this: Entity =>
   import EntityId.Field.Id
-  val id = Field(Id, Some(new ObjectId()))
+  val id = Field(Id, Some(new ObjectId))(implicitly[Manifest[ObjectId]], implicitly[TypeHandler[Option[ObjectId]]], this.fieldsMap)
 }
 
 
@@ -34,7 +34,7 @@ trait EntityValidator { this: Entity =>
 class Entity extends Cloneable with Serializable {
   import Entity.Field._
 
-  val fieldsMap = new collection.mutable.HashMap[String, Field[_]]
+  implicit val fieldsMap = new collection.mutable.HashMap[String, Field[_]]
   val className = Field[String](ClassName, Some(this.getClass.getName))
 
 	def toDBObject : DBObject = {
@@ -95,13 +95,6 @@ class Entity extends Cloneable with Serializable {
        " with illegal types in fields"
    }
   }
-
-
-  def Field[T](key: String, default : Option[T] = None)(implicit m : Manifest[T], th : TypeHandler[Option[T]]) =
-    new Field[T](key, default) {
-      thisField => fieldsMap += key -> thisField
-    }
-
 }
 
 

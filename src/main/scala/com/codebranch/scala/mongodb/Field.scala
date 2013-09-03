@@ -1,6 +1,9 @@
 package com.codebranch.scala.mongodb
 
-abstract class Field[T](val key : String, default : Option[T] = None)(implicit val tm : Manifest[T],th : TypeHandler[Option[T]]) extends Serializable {
+class Field[T](val key : String, default : Option[T] = None)(implicit tm: Manifest[T], th: TypeHandler[Option[T]],
+                                                             fm: collection.mutable.HashMap[String, Field[_]]) extends Serializable {
+
+  thisField => fm += key -> thisField
 
 	private var _value = default
 
@@ -53,5 +56,9 @@ object Field {
   import scala.language.implicitConversions
 
   implicit def field2Option[T](f: Field[T]): Option[T] = f.toOption
+
+  def apply[T](key: String, default: Option[T] = None)(implicit tm: Manifest[T], th: TypeHandler[Option[T]],
+      fm: collection.mutable.HashMap[String, Field[_]]): Field[T] =
+    new Field[T](key, default)
 }
 
