@@ -34,8 +34,8 @@ trait EntityValidator { this: Entity =>
 class Entity extends Cloneable with Serializable {
   import Entity.Field._
 
-  val className = Field[String](ClassName, Some(this.getClass.getName))
   val fieldsMap = new collection.mutable.HashMap[String, Field[_]]
+  val className = Field[String](ClassName, Some(this.getClass.getName))
 
 	def toDBObject : DBObject = {
 		val dbObject = new BasicDBObject
