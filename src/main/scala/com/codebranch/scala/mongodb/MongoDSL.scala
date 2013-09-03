@@ -50,6 +50,13 @@ class DBObjectGen(key: String) {
     list
   }))
 
+  def $regex(regex: String, options: String = ""): Expression = {
+    val regexObj = new BasicDBObject("$regex", regex)
+    if (options.length > 0)
+      regexObj.put("$options", options)
+    compose(key, regexObj)
+  }
+
   def $exists(value: JBoolean): Expression = compose(key, compose("$exists", value))
 
   @inline def isDefined: Expression = $exists(true)
