@@ -203,20 +203,9 @@ class ValueTypeHandler extends TypeHandler[Value]
 	def toDBObject(v: Value) = v.dbObject
 }
 
-
-class EntityTypeHandler[T <: Entity](implicit m : Manifest[T])
-		extends NotNullTypeHandler[T]
-{
-  def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
-    case v : DBObject => {
-      v.get(Entity.Field.ClassName) match {
-        case null =>
-          m.runtimeClass.newInstance.asInstanceOf[T].fromDBObject(v, partial)
-        case className: String =>
-          Entity(v, partial).asInstanceOf[T]
-        case x => throw unexpectedType(x.getClass, classOf[String])
-      }
-    }
+class EntityTypeHandler[T <: Entity](implicit m : Manifest[T]) extends NotNullTypeHandler[T] {
+  def fromDBObjectNN(v: Object, partial: Boolean = false): T = v match {
+    case v: DBObject => m.runtimeClass.newInstance.asInstanceOf[T].fromDBObject(v, partial)
     case x => throw unexpectedType(x.getClass, classOf[DBObject])
   }
 
@@ -228,7 +217,7 @@ class EntityTypeHandler[T <: Entity](implicit m : Manifest[T])
 class ImmutableMapTypeHandlerStringKey[T](implicit th : TypeHandler[T])
 	extends NotNullTypeHandler[immutable.Map[String, T]]
 {
-	import scala.collection.JavaConversions.{asJavaMap, mapAsScalaMap}
+	import scala.collection.JavaConversions.mapAsScalaMap
 
 	def fromDBObjectNN (obj: Object, partial: Boolean = false) = obj match {
 		case obj: DBObject => {

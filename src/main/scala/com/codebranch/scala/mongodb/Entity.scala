@@ -32,10 +32,8 @@ trait EntityValidator { this: Entity =>
 }
 
 class Entity extends Cloneable with Serializable {
-  import Entity.Field._
 
   implicit val fieldsMap = new collection.mutable.HashMap[String, Field[_]]
-  val className = Field[String](ClassName, Some(this.getClass.getName))
 
 	def toDBObject : DBObject = {
 		val dbObject = new BasicDBObject
@@ -46,13 +44,12 @@ class Entity extends Cloneable with Serializable {
 		dbObject
 	}
 
-	def fromDBObject(dbObject : BSONObject, partial: Boolean = false) : this.type = {
+	def fromDBObject(dbObject : BSONObject, partial: Boolean = false): this.type = {
     fieldsMap foreach {
       case (k, v) => try {
         if (dbObject.containsField(v.key) || !partial)
           v.fromDBObject(dbObject.get(v.key), partial)
-          //TODO: partially convertions of inner objects
-//        v.fromDBObject(dbObject.get(v.key))
+          //TODO: partial conversion of inner objects
         else
           Logger.debug(s"Skipping conversion of `${v.key}` field")
       } catch {
@@ -68,55 +65,24 @@ class Entity extends Cloneable with Serializable {
     this
   }
 
-
-	def merge[T <: Entity](entity : T) {
+	def merge[T <: Entity](entity : T): this.type  =
 		fromDBObject(entity.toDBObject, partial = true)
-		//TODO: What we should do if T is different class?
-		this.className := Some(this.getClass.getName)
-	}
 
-
-	override def clone : this.type = {
+	override def clone: this.type = {
 		val e = getClass.newInstance().asInstanceOf[this.type]
 		e.merge(this)
 		e
 	}
 
-
 	def toJsonString = toDBObject.toString
-
 
   //TODO: fix toString method with null values
 	override def toString = {
-   try {
-     toDBObject.toString
-   } catch {
-     case e: UnexpectedType => this.getClass.getSimpleName +
-       " with illegal types in fields"
-   }
-  }
-}
-
-
-object Entity {
-
-  object Field {
-    val ClassName = "className"
-  }
-
-  def apply(dbo : BSONObject, partial: Boolean = false) : Entity =
-    dbo.get(Field.ClassName) match {
-      case className : String => {
-        try {
-          Class.forName(className).newInstance().asInstanceOf[Entity].fromDBObject(dbo, partial)
-        } catch {
-          case e: InstantiationException => {
-            Logger.error("Could not create instance for className = %s" format className)
-            throw e
-          }
-        }
-      }
-      case null => throw new Exception("Unable to reconstruct Entity: className = null")
-      case _ => throw new Exception("Unable to reconstruct Entity: className contains unexpected data")
+    try {
+      toDBObject.toString
+    } catch {
+      case e: UnexpectedType => this.getClass.getSimpleName +
+        " with illegal types in fields"
     }
+  }
 }

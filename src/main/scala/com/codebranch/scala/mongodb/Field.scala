@@ -43,10 +43,7 @@ class Field[T](val key : String, default : Option[T] = None)(implicit tm: Manife
     case _ => false
   }
 
-
-	//TODO: Why not _value.hashCode()?
-  override def hashCode(): Int = super.hashCode()
-
+  override def hashCode(): Int = _value.hashCode()
 
   override def toString = _value.toString
 }
