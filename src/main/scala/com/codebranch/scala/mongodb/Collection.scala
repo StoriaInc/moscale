@@ -38,10 +38,8 @@ class Collection(val jColl: jmdb.DBCollection) {
   }
 
 
-	def findOne[T]
-  (query: Value.Map, fields : Map[String, Boolean] = null, order : Map[String, Int] = null)
-  (implicit th: TypeHandler[T])
-  : Option[T] =
+	def findOne[T](query: Value.Map, fields : Map[String, Boolean] = null, order : Map[String, Int] = null)
+      (implicit th: TypeHandler[T]): Option[T] =
     findOne[T](toDBObject(query), toDBObject(fields), toDBObject(order))
 
 
@@ -54,7 +52,7 @@ class Collection(val jColl: jmdb.DBCollection) {
   def save(dbo : Value.Map) : WriteResult =
     save(toDBObject(dbo))
 
-  def save[T <: Entity](entity : T)(implicit th: TypeHandler[T]): WriteResult = {
+  def save[T <: Entity](entity : T)(implicit th: TypeHandler[T]): WriteResult =
 	  entity match {
 		  case e: EntityValidator =>
         val invalidFields = e.validate
@@ -65,8 +63,6 @@ class Collection(val jColl: jmdb.DBCollection) {
 		  case e =>
 			  save(toDBObject(e))
 	  }
-  }
-
 
   def insert(dbo : DBObject) : WriteResult =
     jColl.insert(dbo)
@@ -120,10 +116,6 @@ class Collection(val jColl: jmdb.DBCollection) {
 
   def remove(query : DBObject) : WriteResult =
     jColl.remove(query)
-
-
-  def remove(query : Map[String, Value]) : WriteResult =
-    remove(toDBObject(query))
 
 
   def remove[T <: Entity](entity : T)(implicit th : TypeHandler[T]) : WriteResult =

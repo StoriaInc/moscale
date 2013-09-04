@@ -56,10 +56,6 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
     collection.ensureIndex(keys, name, unique)
   }
 
-  def ensureIndex(keys : Map[String, Int], options : Map[String, Value])(implicit mongo : MongoClient): Unit = {
-    collection.ensureIndex(keys, options)
-  }
-
   def ensureIndex(key : String)(implicit mongo : MongoClient): Unit = {
     collection.ensureIndex(key)
   }

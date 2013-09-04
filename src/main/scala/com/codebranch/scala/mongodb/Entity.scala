@@ -5,7 +5,6 @@ import handlers._
 import org.bson.types.ObjectId
 import org.bson.BSONObject
 
-
 trait EntityId { this: Entity =>
   import EntityId.Field.Id
   val id = Field(Id, Some(new ObjectId))(implicitly[Manifest[ObjectId]], implicitly[TypeHandler[Option[ObjectId]]], this.fieldsMap)
@@ -41,6 +40,7 @@ class Entity extends Cloneable with Serializable {
 			case (k, v) =>
 				dbObject.put(v.key, v.toDBObject)
 		}
+    dbObject.put(Entity.Field.ClassName, getClass.getCanonicalName)
 		dbObject
 	}
 
@@ -84,5 +84,11 @@ class Entity extends Cloneable with Serializable {
       case e: UnexpectedType => this.getClass.getSimpleName +
         " with illegal types in fields"
     }
+  }
+}
+
+object Entity {
+  object Field {
+    val ClassName = "className"
   }
 }

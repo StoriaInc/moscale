@@ -2,9 +2,8 @@ import sbt._
 import Keys._
 
 
-object ApplicationBuild extends Build
-{
-  def frumaticRepository(r : String) : Resolver =
+object ApplicationBuild extends Build {
+  def frumaticRepository(r: String) : Resolver =
     "Sonatype Nexus Repository Manager" at "http://nexus.frumatic.com/content/repositories/" + r
   val frumaticRepositorySnapshots = frumaticRepository("snapshots")
   val frumaticRepositoryReleases = frumaticRepository("releases")
@@ -13,7 +12,7 @@ object ApplicationBuild extends Build
 	val scalaVer = "2.10.2"
 	val appName       = "mongo"
   val isSnapshot = true
-  val version = "1.4" + (if (isSnapshot) "-SNAPSHOT" else "")
+  val version = "1.5" + (if (isSnapshot) "-SNAPSHOT" else "")
 
 	val buildSettings = Defaults.defaultSettings ++ Seq (
     organization := "codebranch",

@@ -157,8 +157,7 @@ object DateTimeTypeHandler
 }
 
 
-class DateTimeTypeHandler extends NotNullTypeHandler[DateTime]
-{
+class DateTimeTypeHandler extends NotNullTypeHandler[DateTime] {
   import DateTimeTypeHandler._
 
 	def fromDBObjectNN(dbo: Object, partial: Boolean) : DateTime = dbo match {
@@ -193,30 +192,33 @@ class DateTimeTypeHandler extends NotNullTypeHandler[DateTime]
 	}
 }
 
-
-class ValueTypeHandler extends TypeHandler[Value]
-{
-	def fromDBObject(dbo: Object, partial: Boolean) = new Value {
-		val dbObject = dbo
-	}
-
-	def toDBObject(v: Value) = v.dbObject
-}
-
 class EntityTypeHandler[T <: Entity](implicit m : Manifest[T]) extends NotNullTypeHandler[T] {
-  def fromDBObjectNN(v: Object, partial: Boolean = false): T = v match {
-    case v: DBObject => m.runtimeClass.newInstance.asInstanceOf[T].fromDBObject(v, partial)
+
+  def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
+    case v : DBObject => {
+      v.get(Entity.Field.ClassName) match {
+        case null =>
+          m.runtimeClass.newInstance.asInstanceOf[T].fromDBObject(v, partial)
+        case className: String =>
+          try {
+            Class.forName(className).newInstance().asInstanceOf[T].fromDBObject(v, partial)
+          } catch {
+            case e: InstantiationException => {
+              Logger.error("Could not create instance for className = %s" format className)
+              throw e
+            }
+          }
+        case x => throw unexpectedType(x.getClass, classOf[String])
+      }
+    }
     case x => throw unexpectedType(x.getClass, classOf[DBObject])
   }
-
 
 	def toDBObjectNN(v: T) = v.toDBObject
 }
 
 
-class ImmutableMapTypeHandlerStringKey[T](implicit th : TypeHandler[T])
-	extends NotNullTypeHandler[immutable.Map[String, T]]
-{
+class ImmutableMapTypeHandlerStringKey[T](implicit th : TypeHandler[T]) extends NotNullTypeHandler[immutable.Map[String, T]] {
 	import scala.collection.JavaConversions.mapAsScalaMap
 
 	def fromDBObjectNN (obj: Object, partial: Boolean = false) = obj match {
@@ -240,18 +242,16 @@ class ImmutableMapTypeHandlerStringKey[T](implicit th : TypeHandler[T])
 
 
 class ImmutableMapTypeHandlerEnumKey[K <: Enumeration,T](implicit th : TypeHandler[T], mn: Manifest[K])
-		extends NotNullTypeHandler[immutable.Map[K#Value, T]]
-{
+		extends NotNullTypeHandler[immutable.Map[K#Value, T]] {
 	import scala.collection.JavaConversions.{asJavaMap, mapAsScalaMap}
 
 	def fromDBObjectNN (obj: Object, partial: Boolean = false) = obj match {
-		case obj: DBObject => {
-			mapAsScalaMap(obj.toMap).asInstanceOf[mutable.Map[String, Object]]
-					.foldLeft(Map[K#Value, T]()) {
+		case obj: DBObject =>
+			mapAsScalaMap(obj.toMap).asInstanceOf[mutable.Map[String, Object]].foldLeft(Map[K#Value, T]()) {
 				case (m, (k, ov)) => m + ((EnumTypeHandler.fromString[K](k), th.fromDBObject(ov)))
 			}
-		}
-		case x => throw unexpectedType(x.getClass, classOf[DBObject])
+		case x =>
+      throw unexpectedType(x.getClass, classOf[DBObject])
 	}
 
 	def toDBObjectNN (map: immutable.Map[K#Value, T]) = {
@@ -270,9 +270,7 @@ object EnumTypeHandler {
 }
 
 
-class EnumTypeHandler [T <:Enumeration](implicit m: Manifest[T])
-		extends NotNullTypeHandler[T#Value]
-{
+class EnumTypeHandler [T <:Enumeration](implicit m: Manifest[T]) extends NotNullTypeHandler[T#Value] {
 	def fromDBObjectNN(dbo: Object, partial: Boolean = false) = dbo match {
 		case s:String => 	{
 			EnumTypeHandler.fromString(s)
@@ -306,9 +304,7 @@ class EnumTypeHandler [T <:Enumeration](implicit m: Manifest[T])
 //}
 
 
-class ListTypeHandler[T](implicit th : TypeHandler[T])
-  extends NotNullTypeHandler[List[T]]
-{
+class ListTypeHandler[T](implicit th : TypeHandler[T]) extends NotNullTypeHandler[List[T]] {
 	def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
 		case v: BasicDBList => {
 			val buffer = ListBuffer[T]()
@@ -330,9 +326,7 @@ class ListTypeHandler[T](implicit th : TypeHandler[T])
 }
 
 
-class SetTypeHandler[T](implicit th : TypeHandler[T])
-		extends NotNullTypeHandler[Set[T]]
-{
+class SetTypeHandler[T](implicit th : TypeHandler[T]) extends NotNullTypeHandler[Set[T]] {
 	def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
 		case v: BasicDBList => {
 			val buffer = ListBuffer[T]()
@@ -378,7 +372,8 @@ abstract class ConvertingTypeHandler[T, StorableType](implicit storableTH : Type
 	override def fromDBObjectNN(dbo: Object, partial: Boolean = false) : T =
 		convertFromStorableType(storableTH.fromDBObject(dbo))
 
-	override def toDBObjectNN(v: T) = storableTH.toDBObject(convertToStorableType(v))
+	override def toDBObjectNN(v: T) =
+    storableTH.toDBObject(convertToStorableType(v))
 }
 
 
