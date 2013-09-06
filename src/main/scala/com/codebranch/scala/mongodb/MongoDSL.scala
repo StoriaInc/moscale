@@ -90,6 +90,8 @@ class DBObjectGen(key: String) {
 //  @inline private def groupOp[T](name: String, values: Seq[Field[T]])(implicit th: TypeHandler[T]): Expression =
 //    groupOp(name, values.map(_.get))
 
+  def $elemMatch[T](expr: Expression): Expression = compose(key, compose("$elemMatch", expr))
+
 }
 
 object DBObjectGen {
