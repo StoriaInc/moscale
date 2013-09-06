@@ -90,11 +90,7 @@ class DBObjectGen(key: String) {
 //  @inline private def groupOp[T](name: String, values: Seq[Field[T]])(implicit th: TypeHandler[T]): Expression =
 //    groupOp(name, values.map(_.get))
 
-  def $elemMatch[T](value: T)(implicit th: TypeHandler[T]): Expression = elemMatch(th.toDBObject(value))
-
-  def $elemMatch(expr: Expression): Expression = elemMatch(expr)
-
-  @inline private def elemMatch(expr: Object): Expression = compose(key, compose("$elemMatch", expr))
+  def $elemMatch(expr: Expression): Expression = compose(key, compose("$elemMatch", expr))
 
 }
 
@@ -214,6 +210,12 @@ object MongoDSL {
 
   def $set(expr: Expression, exprs: Expression*): Expression =
     compose("$set", composeExprs(expr, exprs: _*))
+
+  def $setOnInsert(expr: Expression, exprs: Expression*): Expression =
+    compose("$setOnInsert", composeExprs(expr, exprs: _*))
+
+  def $rename(expr: Expression, exprs: Expression*): Expression =
+    compose("$rename", composeExprs(expr, exprs: _*))
 
   def $unset(expr: Expression, exprs: Expression*): Expression =
     compose("$unset", composeExprs(expr, exprs: _*))
