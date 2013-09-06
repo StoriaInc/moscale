@@ -393,9 +393,6 @@ package object handlers {
 	implicit lazy val dbObjectTypeHandler = new AsIsTypeHandler[DBObject]
 	implicit lazy val dateTimeTYpeHandler = new DateTimeTypeHandler
 
-
-	implicit lazy val valueTypeHandler = new ValueTypeHandler
-
 	implicit def optionTypeHandler[T](implicit th : TypeHandler[T]) = new OptionTypeHandler[T]
 
 	implicit def entityTypeHandler[T <: Entity](implicit m : Manifest[T]) : TypeHandler[T] =
