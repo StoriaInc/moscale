@@ -144,15 +144,7 @@ class BooleanTypeHandler
 }
 
 
-object DateTimeTypeHandler
-{
-  val Zone = "dateTimeZone"
-  val Year = "year"
-  val MonthOfYear = "monthOfYear"
-  val DayOfMonth = "dayOfMonth"
-  val HoursOfDay = "hourOfDay"
-  val MinuteOfHour = "minuteOfHour"
-  val SecondOfMinute = "secondOfMinute"
+object DateTimeTypeHandler {
   val Milliseconds = "milliseconds"
 }
 
@@ -161,32 +153,19 @@ class DateTimeTypeHandler extends NotNullTypeHandler[DateTime] {
   import DateTimeTypeHandler._
 
 	def fromDBObjectNN(dbo: Object, partial: Boolean) : DateTime = dbo match {
-		case dbo: DBObject => {
-		val millis = dbo.get(Milliseconds) match {
-			case m: JLong => m
-			case _ =>
-				throw new RuntimeException("DBObject should contains milliseconds field")
-		}
-			val zone = dbo.get(Zone) match {
-				case z: String => z
-				case _ =>
-					throw new RuntimeException("DBObject should contains time zone eld")
-			}
-			val date = new DateTime().withZone(DateTimeZone.forID(zone))
-			date.withMillis(millis)
-		}
-		case x => throw unexpectedType(x.getClass, classOf[DBObject])
+		case dbo: DBObject =>
+      val millis = dbo.get(Milliseconds) match {
+        case m: JLong => m
+        case _ =>
+          throw new RuntimeException("DBObject should contains milliseconds field")
+      }
+			new DateTime().withMillis(millis)
+		case x =>
+      throw unexpectedType(x.getClass, classOf[DBObject])
 	}
 
 	def toDBObjectNN(v: DateTime) : Object = {
 		val dbo = new BasicDBObject()
-		dbo.put(Zone, v.getZone.getID)
-		dbo.put(Year, v.year.get)
-    dbo.put(MonthOfYear, v.monthOfYear.get())
-		dbo.put(DayOfMonth, v.dayOfMonth.get())
-		dbo.put(HoursOfDay, v.hourOfDay.get())
-		dbo.put(MinuteOfHour, v.minuteOfHour.get())
-		dbo.put(SecondOfMinute,	v.secondOfMinute.get())
 		dbo.put(Milliseconds, v.getMillis)
 		dbo
 	}
