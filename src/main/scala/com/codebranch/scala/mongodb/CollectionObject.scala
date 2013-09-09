@@ -1,7 +1,7 @@
 package com.codebranch.scala.mongodb
 
 
-import com.mongodb.{WriteResult, DBObject}
+import com.mongodb.{BasicDBObject, WriteResult, DBObject}
 import org.bson.types.ObjectId
 import com.codebranch.scala.mongodb.handlers._
 
@@ -41,7 +41,12 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest : Manifest[T
     collection.remove(query)
 
   def remove(entity : T)(implicit mongo : MongoClient) : WriteResult =
-    collection.remove(entity)
+    entity match {
+      case entityId: EntityId =>
+        collection.remove(new BasicDBObject(EntityId.Field.Id, entityId.id.get))
+      case _ =>
+        collection.remove(entity)
+    }
 
   def aggregate(first: DBObject, others: DBObject*)(implicit mongo: MongoClient) = {
     Logger.debug("AGGREGATE QUERY:")
