@@ -240,6 +240,9 @@ object MongoDSL {
   def $push(expr: Expression, exprs: Expression*): Expression =
     compose("$push", composeExprs(expr, exprs: _*))
 
+  def $pushAll(expr: Expression): Expression =
+    compose("$pushAll", expr)
+
   def $pull(expr: Expression, exprs: Expression*): Expression =
     compose("$pull", composeExprs(expr, exprs: _*))
 
