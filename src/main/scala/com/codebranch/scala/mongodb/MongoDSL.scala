@@ -168,15 +168,10 @@ object MongoDSL {
       case _ => false
     }
 
-  def $and(expr: Expression, exprs: Expression*): Expression =
-    if (exprs.isEmpty)
-      expr
-    else if (isContainer("$and", expr)) {
-      val list = expr.get("$and").asInstanceOf[BasicDBList]
-      exprs.foreach(list.add)
-      expr
-    } else
-      compose("$and", $array(expr, exprs: _*))
+  def $and(expr: Expression, exprs: Expression*): Expression = {
+    exprs.foreach(expr.putAll)
+    expr
+  }
 
   def $or(expr: Expression, exprs: Expression*): Expression =
     if (exprs.isEmpty)
