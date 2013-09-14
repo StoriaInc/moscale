@@ -162,49 +162,31 @@ object MongoDSL {
     th.toDBObject(value).asInstanceOf[Expression]
   }
 
-  def $and(expr: Expression, exprs: Expression*): Expression = {
-    val allExprs = (exprs :+ expr).filter(_ != null)
-    if (allExprs.isEmpty) {
-      throw new IllegalStateException("$and for empty expression list")
-    } else if (allExprs.length == 1) {
-      allExprs.head
-    } else {
-      val andContainer = allExprs.find(_ match {
-        case bdbo: BasicDBObject if bdbo.keySet.size == 1 && bdbo.containsField("$and") => true
-        case _ => false
-      })
-      andContainer match {
-        case Some(container) =>
-          val list = container.get("$and").asInstanceOf[BasicDBList]
-          allExprs.filter(_ != container).foreach(list.add)
-          container
-        case _ =>
-          compose("$and", $array(allExprs.head, allExprs.tail: _*))
-      }
+  private def isContainer(contType: String, expr: Expression): Boolean =
+    expr match {
+      case bdbo: BasicDBObject if bdbo.keySet.size == 1 && bdbo.containsField(contType) => true
+      case _ => false
     }
-  }
 
-  def $or(expr: Expression, exprs: Expression*): Expression = {
-    val allExprs = (exprs :+ expr).filter(_ != null)
-    if (allExprs.isEmpty) {
-      throw new IllegalStateException("$or for empty expression list")
-    } else if (allExprs.length == 1) {
-      allExprs.head
-    } else {
-      val orContainer = allExprs.find(_ match {
-        case bdbo: BasicDBObject if bdbo.keySet.size == 1 && bdbo.containsField("$or") => true
-        case _ => false
-      })
-      orContainer match {
-        case Some(container) =>
-          val list = container.get("$or").asInstanceOf[BasicDBList]
-          allExprs.filter(_ != container).foreach(list.add)
-          container
-        case _ =>
-          compose("$or", $array(allExprs.head, allExprs.tail: _*))
-      }
-    }
-  }
+  def $and(expr: Expression, exprs: Expression*): Expression =
+    if (exprs.isEmpty)
+      expr
+    else if (isContainer("$and", expr)) {
+      val list = expr.get("$and").asInstanceOf[BasicDBList]
+      exprs.foreach(list.add)
+      expr
+    } else
+      compose("$and", $array(expr, exprs: _*))
+
+  def $or(expr: Expression, exprs: Expression*): Expression =
+    if (exprs.isEmpty)
+      expr
+    else if (isContainer("$or", expr)) {
+      val list = expr.get("$or").asInstanceOf[BasicDBList]
+      exprs.foreach(list.add)
+      expr
+    } else
+      compose("$or", $array(expr, exprs: _*))
 
   def $each[T](values: Seq[T])(implicit th: TypeHandler[T]): Expression =
     compose("$each", $array(values))
