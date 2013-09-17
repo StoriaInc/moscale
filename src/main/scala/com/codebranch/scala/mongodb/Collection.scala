@@ -20,13 +20,13 @@ class Collection(val jColl: jmdb.DBCollection) {
   def find[T](implicit th : TypeHandler[T]) : Cursor[T] = find[T](null : DBObject, null : DBObject)
 
 
-	def find[T](query: DBObject, fields : DBObject)(implicit th: TypeHandler[T]): Cursor[T] = {
+	def find[T](query: DBObject, fields: DBObject)(implicit th: TypeHandler[T]): Cursor[T] = {
     Logger.debug("Find. Query = %s" format query)
     new Cursor[T](jColl.find(query, fields))
   }
 
 
-  def findOne[T](query: DBObject, fields : DBObject, order : DBObject)(implicit th: TypeHandler[T]) : Option[T] = {
+  def findOne[T](query: DBObject, fields: DBObject, order : DBObject)(implicit th: TypeHandler[T]) : Option[T] = {
     Logger.debug("FindOne. Query = %s" format query.toString)
     val res = Option(jColl.findOne(query, fields, order)).map(th.fromDBObject(_))
     Logger.debug("Found %s" format res.toString)
@@ -68,9 +68,8 @@ class Collection(val jColl: jmdb.DBCollection) {
   }
 
 
-  def update(query : DBObject, obj : DBObject, upsert : Boolean, multi : Boolean) : WriteResult =
+  def update(query: DBObject, obj: DBObject, upsert: Boolean, multi: Boolean) : WriteResult =
     jColl.update(query, obj, upsert, multi)
-
 
   def findAndModify(query: DBObject, update: DBObject, order: DBObject, fields: DBObject, upsert: Boolean, returnNew: Boolean): DBObject = {
     jColl.findAndModify(query, fields, order, false, update, returnNew, upsert)
