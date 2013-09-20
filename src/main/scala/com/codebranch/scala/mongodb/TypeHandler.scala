@@ -372,10 +372,14 @@ package object handlers {
 	implicit lazy val dbObjectTypeHandler = new AsIsTypeHandler[DBObject]
 	implicit lazy val dateTimeTYpeHandler = new DateTimeTypeHandler
 
-	implicit def optionTypeHandler[T](implicit th : TypeHandler[T]) = new OptionTypeHandler[T]
 
-	implicit def entityTypeHandler[T <: Entity](implicit m : Manifest[T]) : TypeHandler[T] =
-		new EntityTypeHandler[T]
+  private val handlerMap = new mutable.HashMap[Manifest[_], EnumTypeHandler[_]]
+
+  implicit def optionTypeHandler[T](implicit th : TypeHandler[T], m: Manifest[T]) =
+    new OptionTypeHandler[T]
+
+	implicit def entityTypeHandler[T <: Entity](implicit m : Manifest[T]): TypeHandler[T] =
+    new EntityTypeHandler[T]
 
 	implicit def listTypeHandler[T](implicit th : TypeHandler[T]) = new ListTypeHandler[T]
 
@@ -393,8 +397,15 @@ package object handlers {
 //  implicit def mutableMapTypeHandler[T](implicit th : TypeHandler[T]) : TypeHandler[mutable.Map[String,T]] =
 //    new MutableMapTypeHandler[T]
 
-	implicit def enumTypeHandler[T <: Enumeration](implicit m: Manifest[T]): TypeHandler[T#Value] =
-		new EnumTypeHandler[T]()
+	implicit def enumTypeHandler[T <: Enumeration](implicit m: Manifest[T]): TypeHandler[T#Value] = {
+    if (handlerMap.contains(m))
+      handlerMap(m).asInstanceOf[EnumTypeHandler[T]]
+    else {
+      val handler = new EnumTypeHandler[T]
+      handlerMap.put(m, handler)
+      handler
+    }
+  }
 
 
   implicit lazy val urlTypeHandler = new ConvertingTypeHandler[URL, String]
