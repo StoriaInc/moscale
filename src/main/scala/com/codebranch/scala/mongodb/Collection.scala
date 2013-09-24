@@ -25,6 +25,11 @@ class Collection(val jColl: jmdb.DBCollection) {
     new Cursor[T](jColl.find(query, fields))
   }
 
+  def findRaw(query: DBObject, fields: DBObject): RawCursor = {
+    Logger.debug("Find. Query = %s" format query)
+    new RawCursor(jColl.find(query, fields))
+  }
+
 
   def findOne[T](query: DBObject, fields: DBObject, order : DBObject)(implicit th: TypeHandler[T]) : Option[T] = {
     Logger.debug("FindOne. Query = %s" format query.toString)
@@ -33,9 +38,10 @@ class Collection(val jColl: jmdb.DBCollection) {
     res
   }
 
-//  def findById[T](id : Value)(implicit th: TypeHandler[T]) : Option[T] =
-//    findOne[T](Query(EntityId.Field.Id -> id))
-
+  def findOneRaw(query: DBObject, fields: DBObject, order: DBObject): Option[DBObject] = {
+    Logger.debug("FindOne. Query = %s" format query.toString)
+    Option(jColl.findOne(query, fields, order))
+  }
 
   def save(dbo : DBObject) : WriteResult = jColl.save(dbo)
 

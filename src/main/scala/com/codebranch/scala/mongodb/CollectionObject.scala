@@ -16,11 +16,20 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest: Manifest[T]
 	def find(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Cursor[T] =
 		collection.find[T](query, fields)
 
+  def findRaw(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): RawCursor =
+    collection.findRaw(query, fields)
+
 	def findOne(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] =
 		collection.findOne[T](query, fields, null)
 
+  def findOneRaw(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Option[DBObject] =
+    collection.findOneRaw(query, fields, null)
+
   def findById(id: ObjectId, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] =
     findOne(DBObjectGen.compose(EntityId.Field.Id, id), fields)
+
+  def findByIdRaw(id: ObjectId, fields: DBObject = null)(implicit mongo: MongoClient): Option[DBObject] =
+    findOneRaw(DBObjectGen.compose(EntityId.Field.Id, id), fields)
 
   def save(entity: T)(implicit mongo: MongoClient): WriteResult = collection.save(entity)
 
