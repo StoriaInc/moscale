@@ -3,6 +3,7 @@ package com.codebranch.scala.mongodb
 import com.mongodb.{BasicDBList, BasicDBObject}
 import java.lang.{Integer => JInteger, Boolean => JBoolean, Long => JLong}
 import Query.Expression
+import java.util.Date
 
 class DBObjectGen(key: String) {
 
@@ -21,6 +22,7 @@ class DBObjectGen(key: String) {
 
   def $ne[T](value: Field[T])(implicit th: TypeHandler[T]): Expression = compose(key, compose("$ne", th.toDBObject(value.get)))
 
+
   def $gt(value: JLong): Expression = compose(key, compose("$gt", value))
 
   @inline def >(value: Long): Expression = $gt(value)
@@ -33,13 +35,29 @@ class DBObjectGen(key: String) {
 
   @inline def <(value: Long): Expression = $lt(value)
 
-//  def $lte(value: JInteger): Expression = compose(key, compose("$lte", value))
-
   def $lte(value: JLong): Expression = compose(key, compose("$lte", value))
 
-//  @inline def <=(value: Int): Expression = $lte(value)
-
   @inline def <=(value: Long): Expression = $lte(value)
+
+
+
+  def $gt(value: Date): Expression = compose(key, compose("$gt", value))
+
+  @inline def >(value: Date): Expression = $gt(value)
+
+  def $gte(value: Date): Expression = compose(key, compose("$gte", value))
+
+  @inline def >=(value: Date): Expression = $gte(value)
+
+  def $lt(value: Date): Expression = compose(key, compose("$lt", value))
+
+  @inline def <(value: Date): Expression = $lt(value)
+
+  def $lte(value: Date): Expression = compose(key, compose("$lte", value))
+
+  @inline def <=(value: Date): Expression = $lte(value)
+
+
 
   def $size(value: JLong): Expression = compose(key, compose("$size", value))
 
