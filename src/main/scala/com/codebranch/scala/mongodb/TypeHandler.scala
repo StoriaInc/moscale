@@ -143,32 +143,13 @@ class BooleanTypeHandler
 	override def toDBObjectNN(v: Boolean) = new JBoolean(v)
 }
 
-
-object DateTimeTypeHandler {
-  val Milliseconds = "milliseconds"
-}
-
-
 class DateTimeTypeHandler extends NotNullTypeHandler[DateTime] {
-  import DateTimeTypeHandler._
+	def fromDBObjectNN(v: Object, partial: Boolean): DateTime = v match {
+    case x: java.util.Date => new DateTime(x)
+    case x => throw UnexpectedType.unexpectedType(x.getClass, classOf[java.util.Date])
+  }
 
-	def fromDBObjectNN(dbo: Object, partial: Boolean) : DateTime = dbo match {
-		case dbo: DBObject =>
-      val millis = dbo.get(Milliseconds) match {
-        case m: JLong => m
-        case _ =>
-          throw new RuntimeException("DBObject should contains milliseconds field")
-      }
-			new DateTime().withMillis(millis)
-		case x =>
-      throw unexpectedType(x.getClass, classOf[DBObject])
-	}
-
-	def toDBObjectNN(v: DateTime) : Object = {
-		val dbo = new BasicDBObject()
-		dbo.put(Milliseconds, v.getMillis)
-		dbo
-	}
+	def toDBObjectNN(v: DateTime): Object = v.toDate
 }
 
 class EntityTypeHandler[T <: Entity](implicit m : Manifest[T]) extends NotNullTypeHandler[T] {
