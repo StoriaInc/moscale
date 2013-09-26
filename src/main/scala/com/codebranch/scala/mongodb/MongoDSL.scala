@@ -187,8 +187,12 @@ object MongoDSL {
     }
 
   def $and(expr: Expression, exprs: Expression*): Expression = {
-    exprs.foreach(expr.putAll)
-    expr
+    if (expr == EmptyExpression) {
+      $and(exprs.head, exprs.tail:_*)
+    } else {
+      exprs.foreach(expr.putAll)
+      expr
+    }
   }
 
   def $or(expr: Expression, exprs: Expression*): Expression =
