@@ -190,7 +190,7 @@ object MongoDSL {
     if (expr == EmptyExpression) {
       $and(exprs.head, exprs.tail:_*)
     } else {
-      exprs.foreach(expr.putAll)
+      exprs.filter(_ != EmptyExpression).foreach(expr.putAll)
       expr
     }
   }
