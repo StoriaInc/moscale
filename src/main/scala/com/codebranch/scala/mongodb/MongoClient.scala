@@ -43,6 +43,25 @@ class MongoClient(val jMongo : JMongoClient)
 	def getWriteConcern = jMongo.getWriteConcern
 
 
+  /**
+   * Sets the ReadPreference for this client
+   */
+  def setReadPreference(pref: ReadPreference) {
+    jMongo.setReadPreference(pref)
+  }
+
+
+  /**
+   * Sets the default query options
+   */
+  def options_= (options: Int): Unit = {
+    jMongo.setOptions(options)
+  }
+
+
+  def options = jMongo.getMongoClientOptions
+
+
 	/**
 	 * Returns collection with name collectionName in database databaseName.
 	 * @param databaseName database name.
@@ -65,29 +84,6 @@ class MongoClient(val jMongo : JMongoClient)
 			                                     format (m.runtimeClass.getName))
 		}
 
-//  @deprecated(message = "Use Collection.findOne() instead", since = "1.0")
-//	def findOne[T <: Entity](query : Map[String, Value])(implicit m : Manifest[T], th : TypeHandler[T]) =
-//		getCollection[T].findOne[T](query)
-//
-//  @deprecated(message = "Use Collection.find()", since = "1.0")
-//  def find[T <: Entity](query : Map[String, Value])(implicit m : Manifest[T], th : TypeHandler[T]) =
-//    getCollection[T].find[T](query)
-//
-//  @deprecated(message = "Use Collection.find() and cursor's skip and limit methods instead", since = "1.0")
-//  def find[T <: Entity](query : Map[String, Value], limit: Int, offset: Int, sorter: DBObject)(implicit m : Manifest[T], th : TypeHandler[T]) =
-//    getCollection[T].find[T](query, limit, offset, sorter)
-//
-//	@deprecated(message = "Use Collection.save()", since = "1.0")
-//	def save[T <: Entity](entity : T)(implicit m : Manifest[T], th : TypeHandler[T]): WriteResult =
-//		getCollection[T].save(entity)
-//
-//	@deprecated(message = "Use Collection.insert()", since = "1.0")
-//  def insert[T <: Entity](entity : T)(implicit m : Manifest[T], th : TypeHandler[T]): WriteResult =
-//    getCollection[T].insert(entity)
-//
-//	@deprecated(message = "Use Collection.delete()", since = "1.0")
-//	def delete[T <: Entity](entity: T)(implicit m: Manifest[T], th: TypeHandler[T]) =
-//		getCollection[T].remove(entity)
 }
 
 
