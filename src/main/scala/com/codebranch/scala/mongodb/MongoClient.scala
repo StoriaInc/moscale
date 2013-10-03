@@ -38,17 +38,24 @@ class MongoClient(val jMongo : JMongoClient)
 		new Database(db)
 	}
 
-	def setWriteConcern(wc : WriteConcern) = jMongo.setWriteConcern(wc)
 
-	def getWriteConcern = jMongo.getWriteConcern
+  /**
+   * Sets the write concern for this client. Will be used as default for
+   * writes to any collection in any database.
+   *
+   * @param wc write concern to use
+   */
+	def writeConcern_= (wc : WriteConcern): Unit = jMongo.setWriteConcern(wc)
+
+	def writeConcern = jMongo.getWriteConcern
 
 
   /**
    * Sets the ReadPreference for this client
    */
-  def setReadPreference(pref: ReadPreference) {
-    jMongo.setReadPreference(pref)
-  }
+  def readPreference_= (pref: ReadPreference): Unit = jMongo.setReadPreference(pref)
+
+  def readPreference = jMongo.getReadPreference
 
 
   /**
@@ -57,7 +64,6 @@ class MongoClient(val jMongo : JMongoClient)
   def options_= (options: Int): Unit = {
     jMongo.setOptions(options)
   }
-
 
   def options = jMongo.getMongoClientOptions
 
@@ -87,8 +93,7 @@ class MongoClient(val jMongo : JMongoClient)
 }
 
 
-object MongoClient
-{
+object MongoClient {
 	/**
 	 * Returns name of the collection with elements of type T. T should be annotated with CollectionEntity annotation.
 	 * @param m Manifest[T].
@@ -110,7 +115,6 @@ object MongoClient
 
 
 
-trait MongoSupport
-{
+trait MongoSupport {
 	implicit val mongo : MongoClient
 }
