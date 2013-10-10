@@ -59,7 +59,7 @@ class DBObjectGen(key: String) {
 
 
 
-  def $size(value: JLong): Expression = compose(key, compose("$size", value))
+  def $size[T](value: T)(implicit th: TypeHandler[T]): Expression = compose(key, compose("$size", th.toDBObject(value)))
 
   def $mod(divisor: JInteger, remainder: JInteger): Expression = compose(key, compose("$mod", {
     val list = new BasicDBList
