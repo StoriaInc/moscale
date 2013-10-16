@@ -36,10 +36,7 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest: Manifest[T]
   def insert(entity: T)(implicit mongo: MongoClient): WriteResult = collection.insert(entity)
 
   def update(query: DBObject, obj: DBObject, upsert: Boolean = false, multi: Boolean = false)(implicit mongo: MongoClient): WriteResult = {
-    Logger.debug("UPDATE QUERY:")
-    Logger.debug(query.toString)
-    Logger.debug("OBJECT")
-    Logger.debug(obj.toString)
+    Logger.debug(s"update($query, $obj, multi = $multi, upsert = $upsert)")
     collection.update(query, obj, upsert, multi)
   }
 
@@ -55,11 +52,8 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest: Manifest[T]
     }
 
   def aggregate(first: DBObject, others: DBObject*)(implicit mongo: MongoClient) = {
-    Logger.debug("AGGREGATE QUERY:")
-    Logger.debug(first.toString)
-    val result = collection.aggregate(first, others:_*)
-    others.foreach(query => Logger.debug(query.toString))
-    result
+    Logger.debug(s"aggregate($first, $others)")
+    collection.aggregate(first, others:_*)
   }
 
   def ensureIndex(keys: Map[String, Int], name: Option[String] = None, unique: Boolean = false)(implicit mongo: MongoClient): Unit = {

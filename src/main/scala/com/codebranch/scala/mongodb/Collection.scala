@@ -1,7 +1,7 @@
 package com.codebranch.scala.mongodb
 
 import com.{mongodb => jmdb}
-import jmdb.{WriteResult, DBObject, AggregationOutput}
+import com.mongodb.{BasicDBObject, WriteResult, DBObject, AggregationOutput}
 import scala.util.control.ControlThrowable
 import handlers._
 
@@ -75,7 +75,7 @@ class Collection(val jColl: jmdb.DBCollection) {
 
 
   def update(query: DBObject, obj: DBObject, upsert: Boolean, multi: Boolean) : WriteResult =
-    jColl.update(query, obj, upsert, multi)
+    jColl.update(if (query == null) new BasicDBObject else query, obj, upsert, multi)
 
   def findAndModify(query: DBObject, update: DBObject, order: DBObject, fields: DBObject, upsert: Boolean, returnNew: Boolean): DBObject = {
     jColl.findAndModify(query, fields, order, false, update, returnNew, upsert)
