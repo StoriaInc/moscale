@@ -33,6 +33,8 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest: Manifest[T]
 
   def save(entity: T)(implicit mongo: MongoClient): WriteResult = collection.save(entity)
 
+  def saveRaw(obj: DBObject)(implicit mongo: MongoClient): WriteResult = collection.save(obj)
+
   def insert(entity: T)(implicit mongo: MongoClient): WriteResult = collection.insert(entity)
 
   def update(query: DBObject, obj: DBObject, upsert: Boolean = false, multi: Boolean = false)(implicit mongo: MongoClient): WriteResult = {
