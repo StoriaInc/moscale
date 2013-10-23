@@ -71,7 +71,6 @@ class Entity extends Cloneable with Serializable {
         fieldsMap(key).fromDBObject(value.toDBObject)
     }}
     this
-//		fromDBObject(entity.toDBObject, partial = true)
   }
 
 	override def clone: this.type = {

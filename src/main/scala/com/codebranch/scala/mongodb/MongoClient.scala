@@ -9,29 +9,24 @@ import collection.JavaConversions._
 import java.util
 
 
-class MongoClient(val jMongo : JMongoClient)
-{
+class MongoClient(val jMongo: JMongoClient) {
   import MongoClient._
 
-	def this(uri : JMongoClientURI) = this(new JMongoClient(uri))
+	def this(uri: JMongoClientURI) = this(new JMongoClient(uri))
 
-	def this(addrs : Seq[jmdb.ServerAddress], options : MongoClientOptions) =
+	def this(addrs: Seq[jmdb.ServerAddress], options: MongoClientOptions) =
 		this(new JMongoClient(seqAsJavaList(addrs), options))
 
-	def this(addrs : Seq[jmdb.ServerAddress]) =
+	def this(addrs: Seq[jmdb.ServerAddress]) =
 		this(new JMongoClient(seqAsJavaList(addrs)))
 
-	def this(addr : jmdb.ServerAddress) = this(Seq(addr))
+	def this(addr: jmdb.ServerAddress) = this(Seq(addr))
 
-	def this(addr : jmdb.ServerAddress, options : MongoClientOptions) =
+	def this(addr: jmdb.ServerAddress, options: MongoClientOptions) =
 		this(Seq(addr), options)
 
-
-	def this(
-		host : String = "localhost",
-		port : Int = 27017,
-		options : MongoClientOptions = null)
-	= this(new jmdb.ServerAddress(host, port), options)
+	def this(host: String = "localhost", port: Int = 27017, options: MongoClientOptions = null) =
+    this(new jmdb.ServerAddress(host, port), options)
 
 	def getDatabase(name: String) = {
 		val db = jMongo.getDB(name)
@@ -45,7 +40,7 @@ class MongoClient(val jMongo : JMongoClient)
    *
    * @param wc write concern to use
    */
-	def writeConcern_= (wc : WriteConcern): Unit = jMongo.setWriteConcern(wc)
+	def writeConcern_= (wc: WriteConcern): Unit = jMongo.setWriteConcern(wc)
 
 	def writeConcern = jMongo.getWriteConcern
 
@@ -74,7 +69,7 @@ class MongoClient(val jMongo : JMongoClient)
 	 * @param collectionName collection name.
 	 * @return Returns collection with name collectionName in database databaseName.
 	 */
-	private def getCollection(databaseName : String, collectionName : String) = getDatabase(databaseName).getCollection(collectionName)
+	private def getCollection(databaseName: String, collectionName: String) = getDatabase(databaseName).getCollection(collectionName)
 
 
 	/**
@@ -100,7 +95,7 @@ object MongoClient {
 	 * @tparam T entity type.
 	 * @return collection name.
 	 */
-	def getDatabaseName[T <: Entity](implicit m : Manifest[T]) : Option[String] =
+	def getDatabaseName[T <: Entity](implicit m: Manifest[T]) : Option[String] =
 		Option(m.runtimeClass.getAnnotation(classOf[CollectionEntity])).map(_.databaseName)
 
 
@@ -108,13 +103,10 @@ object MongoClient {
 	 * Returns name of the database where elements of type T located. T should be annotated with CollectionEntity
 	 * annotation.
 	 */
-	def getCollectionName[T <: Entity](implicit m : Manifest[T]) : Option[String] =
+	def getCollectionName[T <: Entity](implicit m: Manifest[T]) : Option[String] =
 		Option(m.runtimeClass.getAnnotation(classOf[CollectionEntity])).map(_.collectionName)
 }
 
-
-
-
 trait MongoSupport {
-	implicit val mongo : MongoClient
+	implicit val mongo: MongoClient
 }
