@@ -1,0 +1,1 @@
+# Mongodb wrapper for scala
