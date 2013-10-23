@@ -9,7 +9,7 @@ object ApplicationBuild extends Build {
   val frumaticRepositoryReleases = frumaticRepository("releases")
 
 
-	val scalaVer = "2.10.2"
+	val scalaVer = "2.10.3"
 	val appName       = "mongo"
   val isSnapshot = true
   val version = "1.15" + (if (isSnapshot) "-SNAPSHOT" else "")
@@ -35,14 +35,14 @@ object ApplicationBuild extends Build {
   )
 
   val appDependencies = Seq(
-    "joda-time" % "joda-time" % "2.0",
-    "org.joda" % "joda-convert" % "1.1",
-    "org.mongodb" % "mongo-java-driver" % "2.11.2",
-    "ch.qos.logback" % "logback-classic" % "1.0.7",
+    "joda-time" % "joda-time" % "2.3",
+    "org.joda" % "joda-convert" % "1.5",
+    "org.mongodb" % "mongo-java-driver" % "2.11.3",
+    "ch.qos.logback" % "logback-classic" % "1.0.13",
 		"org.scala-lang" % "scala-reflect" % scalaVer,
     // testing libs
-    "org.scalatest" %% "scalatest" % "1.9" % "test",
-    "org.specs2" %% "specs2" % "1.14" % "test")
+    "org.specs2" %% "specs2" % "2.2.3" % "test"
+  )
 
 
   val main = Project(

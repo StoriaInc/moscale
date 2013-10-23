@@ -69,7 +69,7 @@ class TestMongoDB extends Specification with BeforeAfter {
   implicit def toOption[T](v: T): Option[T] = Some(v)
 
   def before {
-    mongo = new MongoClient(new MongoClientURI("mongodb://localhost:27017/test"))
+    mongo = new MongoClient(new MongoClientURI("mongodb://192.168.0.132:27018"))
     mongo.getDatabase("test").drop()
   }
 

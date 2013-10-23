@@ -17,7 +17,7 @@ class TypeHandlerTest extends Specification with BeforeAfter {
 
 
   def before {
-    mongo = new MongoClient(new MongoClientURI("mongodb://localhost:27017/test"))
+    mongo = new MongoClient(new MongoClientURI("mongodb://192.168.0.132:27018"))
     mongo.getDatabase("test").drop()
   }
 
