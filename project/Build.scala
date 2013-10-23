@@ -14,7 +14,9 @@ object ApplicationBuild extends Build {
   val isSnapshot = true
   val version = "1.15" + (if (isSnapshot) "-SNAPSHOT" else "")
 
-	val buildSettings = Defaults.defaultSettings ++ Seq (
+  val scalaStyleSettings = org.scalastyle.sbt.ScalastylePlugin.Settings
+
+	val buildSettings = Defaults.defaultSettings ++ scalaStyleSettings ++ Seq (
     organization := "codebranch",
     Keys.version := version,
     scalaVersion := scalaVer,
