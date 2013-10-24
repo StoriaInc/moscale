@@ -12,26 +12,26 @@ import java.util
 class MongoClient(val jMongo: JMongoClient) {
   import MongoClient._
 
-	def this(uri: JMongoClientURI) = this(new JMongoClient(uri))
+  def this(uri: JMongoClientURI) = this(new JMongoClient(uri))
 
-	def this(addrs: Seq[jmdb.ServerAddress], options: MongoClientOptions) =
-		this(new JMongoClient(seqAsJavaList(addrs), options))
+  def this(addrs: Seq[jmdb.ServerAddress], options: MongoClientOptions) =
+    this(new JMongoClient(seqAsJavaList(addrs), options))
 
-	def this(addrs: Seq[jmdb.ServerAddress]) =
-		this(new JMongoClient(seqAsJavaList(addrs)))
+  def this(addrs: Seq[jmdb.ServerAddress]) =
+    this(new JMongoClient(seqAsJavaList(addrs)))
 
-	def this(addr: jmdb.ServerAddress) = this(Seq(addr))
+  def this(addr: jmdb.ServerAddress) = this(Seq(addr))
 
-	def this(addr: jmdb.ServerAddress, options: MongoClientOptions) =
-		this(Seq(addr), options)
+  def this(addr: jmdb.ServerAddress, options: MongoClientOptions) =
+    this(Seq(addr), options)
 
-	def this(host: String = "localhost", port: Int = 27017, options: MongoClientOptions = null) =
+  def this(host: String = "localhost", port: Int = 27017, options: MongoClientOptions = null) =
     this(new jmdb.ServerAddress(host, port), options)
 
-	def getDatabase(name: String) = {
-		val db = jMongo.getDB(name)
-		new Database(db)
-	}
+  def getDatabase(name: String) = {
+    val db = jMongo.getDB(name)
+    new Database(db)
+  }
 
 
   /**
@@ -40,9 +40,9 @@ class MongoClient(val jMongo: JMongoClient) {
    *
    * @param wc write concern to use
    */
-	def writeConcern_= (wc: WriteConcern): Unit = jMongo.setWriteConcern(wc)
+  def writeConcern_= (wc: WriteConcern): Unit = jMongo.setWriteConcern(wc)
 
-	def writeConcern = jMongo.getWriteConcern
+  def writeConcern = jMongo.getWriteConcern
 
 
   /**
@@ -63,50 +63,50 @@ class MongoClient(val jMongo: JMongoClient) {
   def options = jMongo.getMongoClientOptions
 
 
-	/**
-	 * Returns collection with name collectionName in database databaseName.
-	 * @param databaseName database name.
-	 * @param collectionName collection name.
-	 * @return Returns collection with name collectionName in database databaseName.
-	 */
-	private def getCollection(databaseName: String, collectionName: String) = getDatabase(databaseName).getCollection(collectionName)
+  /**
+   * Returns collection with name collectionName in database databaseName.
+   * @param databaseName database name.
+   * @param collectionName collection name.
+   * @return Returns collection with name collectionName in database databaseName.
+   */
+  private def getCollection(databaseName: String, collectionName: String) = getDatabase(databaseName).getCollection(collectionName)
 
 
-	/**
-	 * Returns collection for type T. T should be annotated with CollectionEntity annotation.
-	 * @param m Manifest[T].
-	 * @tparam T entity type.
-	 * @return collection of T.
-	 */
-	private[mongodb] def getCollection[T <: Entity](implicit m : Manifest[T]) : Collection =
-		(getDatabaseName[T], getCollectionName[T]) match {
-			case (Some(dn), Some(cn)) => getCollection(dn, cn)
-			case _ => throw new RuntimeException("Class %s should be annotated with @CollectionEntity annotation"
-			                                     format (m.runtimeClass.getName))
-		}
+  /**
+   * Returns collection for type T. T should be annotated with CollectionEntity annotation.
+   * @param m Manifest[T].
+   * @tparam T entity type.
+   * @return collection of T.
+   */
+  private[mongodb] def getCollection[T <: Entity](implicit m : Manifest[T]) : Collection =
+    (getDatabaseName[T], getCollectionName[T]) match {
+      case (Some(dn), Some(cn)) => getCollection(dn, cn)
+      case _ => throw new RuntimeException("Class %s should be annotated with @CollectionEntity annotation"
+                                           format (m.runtimeClass.getName))
+    }
 
 }
 
 
 object MongoClient {
-	/**
-	 * Returns name of the collection with elements of type T. T should be annotated with CollectionEntity annotation.
-	 * @param m Manifest[T].
-	 * @tparam T entity type.
-	 * @return collection name.
-	 */
-	def getDatabaseName[T <: Entity](implicit m: Manifest[T]) : Option[String] =
-		Option(m.runtimeClass.getAnnotation(classOf[CollectionEntity])).map(_.databaseName)
+  /**
+   * Returns name of the collection with elements of type T. T should be annotated with CollectionEntity annotation.
+   * @param m Manifest[T].
+   * @tparam T entity type.
+   * @return collection name.
+   */
+  def getDatabaseName[T <: Entity](implicit m: Manifest[T]) : Option[String] =
+    Option(m.runtimeClass.getAnnotation(classOf[CollectionEntity])).map(_.databaseName)
 
 
-	/**
-	 * Returns name of the database where elements of type T located. T should be annotated with CollectionEntity
-	 * annotation.
-	 */
-	def getCollectionName[T <: Entity](implicit m: Manifest[T]) : Option[String] =
-		Option(m.runtimeClass.getAnnotation(classOf[CollectionEntity])).map(_.collectionName)
+  /**
+   * Returns name of the database where elements of type T located. T should be annotated with CollectionEntity
+   * annotation.
+   */
+  def getCollectionName[T <: Entity](implicit m: Manifest[T]) : Option[String] =
+    Option(m.runtimeClass.getAnnotation(classOf[CollectionEntity])).map(_.collectionName)
 }
 
 trait MongoSupport {
-	implicit val mongo: MongoClient
+  implicit val mongo: MongoClient
 }

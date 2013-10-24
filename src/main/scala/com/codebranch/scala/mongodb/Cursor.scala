@@ -29,7 +29,7 @@ class Cursor[T](val jmdbCursor: jmdb.DBCursor)(implicit th: TypeHandler[T]) {
 
   def limit(n : Int) : Cursor[T] = new Cursor[T](jmdbCursor.copy.limit(n))
 
-	def count: Int = jmdbCursor.count()
+  def count: Int = jmdbCursor.count()
 }
 
 class RawCursor(val jmdbCursor: jmdb.DBCursor) {

@@ -41,7 +41,7 @@ class TestComplexEntity extends Entity with EntityId {
   val name = Field[String]("name")
   val children = Field[List[TestEntity]]("children")
   val leaf = Field[TestEntity]("leaf")
-  //	val refF = Field[Reference[TestEntity]]("child")
+  //  val refF = Field[Reference[TestEntity]]("child")
 }
 
 @CollectionEntity(databaseName = "test", collectionName = "TestEntityWithValidator")
@@ -88,12 +88,6 @@ class TestMongoDB extends Specification with BeforeAfter {
     }
 
 
-    //		"convert Entity with nulls" in {
-    //			val e = new TestEntity
-    //			(e.strF := (null: String)) must throwA[IllegalArgumentException]
-    //		}
-
-
     "convert Entity" in {
       val e = new TestEntity
       e.intF := Some(10)
@@ -108,18 +102,13 @@ class TestMongoDB extends Specification with BeforeAfter {
 
 
 
-    "accept := :=> field operators" in {
+    "accept := field operator" in {
       val e = new TestEntity
       e.intF := Some(10)
-      e.strF := ""
-      //			e.intF :=> {
-      //				case Some(x) => Some(x + 1)
-      //				case None => None
-      //			}
-      val ov = e.intF.get
+      e.strF := "str"
+      e.intF.get mustEqual 10
+      e.strF.get mustEqual "str"
     }
-
-
 
 
     "Mongo query test" in {
@@ -152,31 +141,27 @@ class TestMongoDB extends Specification with BeforeAfter {
       e2.strF must beEqualTo(e.strF)
     }
 
-    "Enumeration test" in {
+
+    "convert scala Enumeration" in {
       val th = implicitly[TypeHandler[Direction.Value]]
       val s = Direction.South
       val obj = th.toDBObject(s)
-      //			Logger.debug(obj.toString)
+      //      Logger.debug(obj.toString)
       val s2 = th.fromDBObject(obj)
-      //			Logger.debug(s2.toString)
+      //      Logger.debug(s2.toString)
       s must beEqualTo(s2)
     }
 
 
-    "Mongo getCollection by entity type" in {
-      val collection = mongo.getCollection[TestComplexEntity]
-    }
-
-
-    "Conversion Joda DateTime" in {
+    "convert Joda DateTime" in {
       val v = new DateTime
       val th = implicitly[TypeHandler[DateTime]]
       val dbo = th.toDBObject(v)
       val v2: DateTime = th.fromDBObject(dbo)
 
-      "Dates are equal" <==>
-        (v.compareTo(v2) must beEqualTo(0))
+      "Dates are equal" <==> (v.compareTo(v2) must beEqualTo(0))
     }
+
 
     "Converting partially from dbObject" in {
       val e = new TestEntityWithDefaults
@@ -200,7 +185,7 @@ class TestMongoDB extends Specification with BeforeAfter {
       innerDbo.put("strF", "newValue")
       dbo.put("entityF", innerDbo)
       e.fromDBObject(dbo, partial = true)
-      //			Logger.debug(dbo.toString)
+      //      Logger.debug(dbo.toString)
 
       "intF does contain default toOption" <==>
         (e.intF.get must beEqualTo(10))

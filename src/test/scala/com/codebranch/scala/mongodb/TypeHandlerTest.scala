@@ -47,14 +47,11 @@ class TypeHandlerTest extends Specification with BeforeAfter {
       ce2.fromDBObject(o)
 
       ce2.children.get.length must beEqualTo(3)
-      //			ce2.children.get.foreach(_.length must beEqualTo(3))
 
-      ce2.children.get foreach {
-        //			_.foreach {
+      ce2.children.get map {
         ch =>
           ch.intF.get must beEqualTo(10)
           ch.strF.get must beEqualTo("test")
-        //			}
       }
     }
 

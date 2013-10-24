@@ -8,10 +8,10 @@ import com.{mongodb => jmdb}
  */
 class Database(db: jmdb.DB) {
 
-	def getCollection(name: String) = {
-		val coll = db.getCollection(name)
-		new Collection(coll)
-	}
+  def getCollection(name: String) = {
+    val coll = db.getCollection(name)
+    new Collection(coll)
+  }
 
   def drop() {
     db.dropDatabase()
