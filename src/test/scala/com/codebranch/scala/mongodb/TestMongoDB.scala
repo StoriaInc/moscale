@@ -88,12 +88,6 @@ class TestMongoDB extends Specification with BeforeAfter {
     }
 
 
-    //    "convert Entity with nulls" in {
-    //      val e = new TestEntity
-    //      (e.strF := (null: String)) must throwA[IllegalArgumentException]
-    //    }
-
-
     "convert Entity" in {
       val e = new TestEntity
       e.intF := Some(10)
@@ -108,18 +102,13 @@ class TestMongoDB extends Specification with BeforeAfter {
 
 
 
-    "accept := :=> field operators" in {
+    "accept := field operator" in {
       val e = new TestEntity
       e.intF := Some(10)
-      e.strF := ""
-      //      e.intF :=> {
-      //        case Some(x) => Some(x + 1)
-      //        case None => None
-      //      }
-      val ov = e.intF.get
+      e.strF := "str"
+      e.intF.get mustEqual 10
+      e.strF.get mustEqual "str"
     }
-
-
 
 
     "Mongo query test" in {
@@ -152,7 +141,8 @@ class TestMongoDB extends Specification with BeforeAfter {
       e2.strF must beEqualTo(e.strF)
     }
 
-    "Enumeration test" in {
+
+    "convert scala Enumeration" in {
       val th = implicitly[TypeHandler[Direction.Value]]
       val s = Direction.South
       val obj = th.toDBObject(s)
@@ -163,20 +153,15 @@ class TestMongoDB extends Specification with BeforeAfter {
     }
 
 
-    "Mongo getCollection by entity type" in {
-      val collection = mongo.getCollection[TestComplexEntity]
-    }
-
-
-    "Conversion Joda DateTime" in {
+    "convert Joda DateTime" in {
       val v = new DateTime
       val th = implicitly[TypeHandler[DateTime]]
       val dbo = th.toDBObject(v)
       val v2: DateTime = th.fromDBObject(dbo)
 
-      "Dates are equal" <==>
-        (v.compareTo(v2) must beEqualTo(0))
+      "Dates are equal" <==> (v.compareTo(v2) must beEqualTo(0))
     }
+
 
     "Converting partially from dbObject" in {
       val e = new TestEntityWithDefaults
