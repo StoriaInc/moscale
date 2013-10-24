@@ -5,23 +5,23 @@ class Field[T](val key: String, default: Option[T] = None)(implicit tm: Manifest
 
   thisField => fm += key -> thisField
 
-	private var value = default
+  private var value = default
 
-	def set(v: Option[T]) {
-		value = v
-	}
+  def set(v: Option[T]) {
+    value = v
+  }
 
   def set(v: T) {
     value = Some(v)
   }
 
 
-	@inline def := (v: Option[T]) = set(v)
+  @inline def := (v: Option[T]) = set(v)
   @inline def := (v: T) = set(v)
 
-	def toOption = value
+  def toOption = value
 
-	def toDBObject =
+  def toDBObject =
     try {
       th.toDBObject(value)
     } catch {
@@ -30,10 +30,10 @@ class Field[T](val key: String, default: Option[T] = None)(implicit tm: Manifest
         throw e
     }
 
-	def fromDBObject(dbObject: Object, partial: Boolean = false): this.type = {
-		value = th.fromDBObject(dbObject, partial)
-		this
-	}
+  def fromDBObject(dbObject: Object, partial: Boolean = false): this.type = {
+    value = th.fromDBObject(dbObject, partial)
+    this
+  }
 
 
   override def equals(obj: Any): Boolean = obj match {

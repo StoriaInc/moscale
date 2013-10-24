@@ -20,7 +20,7 @@ class Collection(val jColl: jmdb.DBCollection) {
   def find[T](implicit th : TypeHandler[T]) : Cursor[T] = find[T](null : DBObject, null : DBObject)
 
 
-	def find[T](query: DBObject, fields: DBObject)(implicit th: TypeHandler[T]): Cursor[T] = {
+  def find[T](query: DBObject, fields: DBObject)(implicit th: TypeHandler[T]): Cursor[T] = {
     Logger.debug("Find. Query = %s" format query)
     new Cursor[T](jColl.find(query, fields))
   }
@@ -46,31 +46,31 @@ class Collection(val jColl: jmdb.DBCollection) {
   def save(dbo : DBObject) : WriteResult = jColl.save(dbo)
 
   def save[T <: Entity](entity : T)(implicit th: TypeHandler[T]): WriteResult =
-	  entity match {
-		  case e: EntityValidator =>
+    entity match {
+      case e: EntityValidator =>
         val invalidFields = e.validate
-			  if (invalidFields.isEmpty)
-			    save(toDBObject(e))
+        if (invalidFields.isEmpty)
+          save(toDBObject(e))
         else
           throw new InvalidFields(invalidFields)
-		  case e =>
-			  save(toDBObject(e))
-	  }
+      case e =>
+        save(toDBObject(e))
+    }
 
   def insert(dbo : DBObject) : WriteResult =
     jColl.insert(dbo)
 
   def insert[T <: Entity](entity : T)(implicit th: TypeHandler[T]) : WriteResult = {
-	  entity match {
-		  case e: EntityValidator =>
+    entity match {
+      case e: EntityValidator =>
         val invalidFields = e.validate
         if (invalidFields.isEmpty)
           insert(toDBObject(e))
         else
           throw new InvalidFields(invalidFields)
-		  case e =>
-			  insert(toDBObject(e))
-	  }
+      case e =>
+        insert(toDBObject(e))
+    }
   }
 
 

@@ -34,17 +34,17 @@ class Entity extends Cloneable with Serializable {
 
   implicit val fieldsMap = new collection.mutable.HashMap[String, Field[_]]
 
-	def toDBObject : DBObject = {
-		val dbObject = new BasicDBObject
-		fieldsMap foreach {
-			case (k, v) =>
-				dbObject.put(v.key, v.toDBObject)
-		}
+  def toDBObject : DBObject = {
+    val dbObject = new BasicDBObject
+    fieldsMap foreach {
+      case (k, v) =>
+        dbObject.put(v.key, v.toDBObject)
+    }
     dbObject.put(Entity.Field.ClassName, getClass.getCanonicalName)
-		dbObject
-	}
+    dbObject
+  }
 
-	def fromDBObject(dbObject : BSONObject, partial: Boolean = false): this.type = {
+  def fromDBObject(dbObject : BSONObject, partial: Boolean = false): this.type = {
     fieldsMap foreach {
       case (k, v) => try {
         if (dbObject.containsField(v.key) || !partial)
@@ -65,25 +65,25 @@ class Entity extends Cloneable with Serializable {
     this
   }
 
-	def merge[T <: Entity](entity: T): this.type = {
+  def merge[T <: Entity](entity: T): this.type = {
     entity.fieldsMap.foreach { case (key, value) => {
       if (value.isDefined && fieldsMap.contains(key))
         fieldsMap(key).fromDBObject(value.toDBObject)
     }}
     this
-//		fromDBObject(entity.toDBObject, partial = true)
+//    fromDBObject(entity.toDBObject, partial = true)
   }
 
-	override def clone: this.type = {
-		val e = getClass.newInstance().asInstanceOf[this.type]
-		e.merge(this)
-		e
-	}
+  override def clone: this.type = {
+    val e = getClass.newInstance().asInstanceOf[this.type]
+    e.merge(this)
+    e
+  }
 
-	def toJsonString = toDBObject.toString
+  def toJsonString = toDBObject.toString
 
   //TODO: fix toString method with null values
-	override def toString = {
+  override def toString = {
     try {
       toDBObject.toString
     } catch {

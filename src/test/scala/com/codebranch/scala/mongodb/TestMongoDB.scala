@@ -41,7 +41,7 @@ class TestComplexEntity extends Entity with EntityId {
   val name = Field[String]("name")
   val children = Field[List[TestEntity]]("children")
   val leaf = Field[TestEntity]("leaf")
-  //	val refF = Field[Reference[TestEntity]]("child")
+  //  val refF = Field[Reference[TestEntity]]("child")
 }
 
 @CollectionEntity(databaseName = "test", collectionName = "TestEntityWithValidator")
@@ -88,10 +88,10 @@ class TestMongoDB extends Specification with BeforeAfter {
     }
 
 
-    //		"convert Entity with nulls" in {
-    //			val e = new TestEntity
-    //			(e.strF := (null: String)) must throwA[IllegalArgumentException]
-    //		}
+    //    "convert Entity with nulls" in {
+    //      val e = new TestEntity
+    //      (e.strF := (null: String)) must throwA[IllegalArgumentException]
+    //    }
 
 
     "convert Entity" in {
@@ -112,10 +112,10 @@ class TestMongoDB extends Specification with BeforeAfter {
       val e = new TestEntity
       e.intF := Some(10)
       e.strF := ""
-      //			e.intF :=> {
-      //				case Some(x) => Some(x + 1)
-      //				case None => None
-      //			}
+      //      e.intF :=> {
+      //        case Some(x) => Some(x + 1)
+      //        case None => None
+      //      }
       val ov = e.intF.get
     }
 
@@ -156,9 +156,9 @@ class TestMongoDB extends Specification with BeforeAfter {
       val th = implicitly[TypeHandler[Direction.Value]]
       val s = Direction.South
       val obj = th.toDBObject(s)
-      //			Logger.debug(obj.toString)
+      //      Logger.debug(obj.toString)
       val s2 = th.fromDBObject(obj)
-      //			Logger.debug(s2.toString)
+      //      Logger.debug(s2.toString)
       s must beEqualTo(s2)
     }
 
@@ -200,7 +200,7 @@ class TestMongoDB extends Specification with BeforeAfter {
       innerDbo.put("strF", "newValue")
       dbo.put("entityF", innerDbo)
       e.fromDBObject(dbo, partial = true)
-      //			Logger.debug(dbo.toString)
+      //      Logger.debug(dbo.toString)
 
       "intF does contain default toOption" <==>
         (e.intF.get must beEqualTo(10))

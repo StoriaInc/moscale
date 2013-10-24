@@ -9,14 +9,14 @@ object ApplicationBuild extends Build {
   val frumaticRepositoryReleases = frumaticRepository("releases")
 
 
-	val scalaVer = "2.10.3"
-	val appName       = "mongo"
+  val scalaVer = "2.10.3"
+  val appName       = "mongo"
   val isSnapshot = true
   val version = "1.15" + (if (isSnapshot) "-SNAPSHOT" else "")
 
   val scalaStyleSettings = org.scalastyle.sbt.ScalastylePlugin.Settings
 
-	val buildSettings = Defaults.defaultSettings ++ scalaStyleSettings ++ Seq (
+  val buildSettings = Defaults.defaultSettings ++ scalaStyleSettings ++ Seq (
     organization := "codebranch",
     Keys.version := version,
     scalaVersion := scalaVer,
@@ -41,7 +41,7 @@ object ApplicationBuild extends Build {
     "org.joda" % "joda-convert" % "1.5",
     "org.mongodb" % "mongo-java-driver" % "2.11.3",
     "ch.qos.logback" % "logback-classic" % "1.0.13",
-		"org.scala-lang" % "scala-reflect" % scalaVer,
+    "org.scala-lang" % "scala-reflect" % scalaVer,
     // testing libs
     "org.specs2" %% "specs2" % "2.2.3" % "test"
   )
@@ -50,5 +50,5 @@ object ApplicationBuild extends Build {
   val main = Project(
     appName,
     file("."),
-		settings = buildSettings ++ Seq(libraryDependencies ++= appDependencies))
+    settings = buildSettings ++ Seq(libraryDependencies ++= appDependencies))
 }

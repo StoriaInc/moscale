@@ -6,21 +6,21 @@ import com.codebranch.scala.mongodb.handlers._
 
 class CollectionObject[T <: Entity with EntityId](implicit manifest: Manifest[T], th: TypeHandler[T]) {
 
-	private def collection(implicit mongo: MongoClient) =
-		mongo.getCollection[T]
+  private def collection(implicit mongo: MongoClient) =
+    mongo.getCollection[T]
 
   def drop()(implicit mongo: MongoClient) {
     collection.drop()
   }
 
-	def find(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Cursor[T] =
-		collection.find[T](query, fields)
+  def find(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Cursor[T] =
+    collection.find[T](query, fields)
 
   def findRaw(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): RawCursor =
     collection.findRaw(query, fields)
 
-	def findOne(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] =
-		collection.findOne[T](query, fields, null)
+  def findOne(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] =
+    collection.findOne[T](query, fields, null)
 
   def findOneRaw(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Option[DBObject] =
     collection.findOneRaw(query, fields, null)
