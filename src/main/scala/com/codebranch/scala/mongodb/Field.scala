@@ -7,11 +7,11 @@ class Field[T](val key: String, default: Option[T] = None)(implicit tm: Manifest
 
   private var value = default
 
-  def set(v: Option[T]) {
+  def set(v: Option[T]): Unit = {
     value = v
   }
 
-  def set(v: T) {
+  def set(v: T): Unit = {
     value = Some(v)
   }
 
@@ -36,14 +36,17 @@ class Field[T](val key: String, default: Option[T] = None)(implicit tm: Manifest
   }
 
 
-  override def equals(obj: Any): Boolean = obj match {
-    case that: Field[T] => that.value == this.value
-    case _ => false
-  }
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case that: Field[T] => that.value == this.value
+      case _ => false
+    }
 
-  override def hashCode(): Int = value.hashCode()
+  override def hashCode: Int =
+    value.hashCode()
 
-  override def toString = value.toString
+  override def toString: String =
+    value.toString
 }
 
 
