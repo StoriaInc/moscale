@@ -13,58 +13,77 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest: Manifest[T]
     collection.drop()
   }
 
-	def find(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Cursor[T] =
-		collection.find[T](query, fields)
+  def jColl(implicit mongo: MongoClient) = collection.jColl
 
-  def findRaw(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): RawCursor =
-    collection.findRaw(query, fields)
+	def find(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Cursor[T] = {
+    Logger.debug("Find. Query = %s" format query)
+    new Cursor[T](jColl.find(query, fields))
+  }
 
-	def findOne(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] =
-		collection.findOne[T](query, fields, null)
-
-  def findOneRaw(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Option[DBObject] =
-    collection.findOneRaw(query, fields, null)
+	def findOne(query: DBObject, fields: DBObject = null, orderBy: DBObject = null)(implicit mongo: MongoClient): Option[T] =   {
+    Logger.debug("FindOne. Query = %s" format query.toString)
+    val res = Option(jColl.findOne(query, fields, orderBy)).map(th.fromDBObject(_))
+    Logger.debug("Found %s" format res.toString)
+    res
+  }
 
   def findById(id: ObjectId, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] =
     findOne(DBObjectGen.compose(EntityId.Field.Id, id), fields)
 
-  def findByIdRaw(id: ObjectId, fields: DBObject = null)(implicit mongo: MongoClient): Option[DBObject] =
-    findOneRaw(DBObjectGen.compose(EntityId.Field.Id, id), fields)
+  def save(entity: T)(implicit mongo: MongoClient): WriteResult =
+    entity match {
+      case e: EntityValidator =>
+        val invalidFields = e.validate
+        if (invalidFields.isEmpty)
+          jColl.save(toDBObject(entity))
+        else
+          throw new InvalidFields(invalidFields)
+      case e =>
+        jColl.save(toDBObject(entity))
+    }
 
-  def save(entity: T)(implicit mongo: MongoClient): WriteResult = collection.save(entity)
-
-  def saveRaw(obj: DBObject)(implicit mongo: MongoClient): WriteResult = collection.save(obj)
-
-  def insert(entity: T)(implicit mongo: MongoClient): WriteResult = collection.insert(entity)
+  def insert(entity: T)(implicit mongo: MongoClient): WriteResult = {
+    entity match {
+      case e: EntityValidator =>
+        val invalidFields = e.validate
+        if (invalidFields.isEmpty)
+          jColl.insert(toDBObject(entity))
+        else
+          throw new InvalidFields(invalidFields)
+      case e =>
+        jColl.insert(toDBObject(entity))
+    }
+  }
 
   def update(query: DBObject, obj: DBObject, upsert: Boolean = false, multi: Boolean = false)(implicit mongo: MongoClient): WriteResult = {
     Logger.debug(s"update($query, $obj, multi = $multi, upsert = $upsert)")
-    collection.update(query, obj, upsert, multi)
+    jColl.update(if (query == null) new BasicDBObject else query, obj, upsert, multi)
   }
 
   def remove(query: DBObject)(implicit mongo: MongoClient): WriteResult =
-    collection.remove(query)
+    jColl.remove(query)
 
   def remove(entity: T)(implicit mongo: MongoClient): WriteResult =
     entity match {
       case entityId: EntityId =>
-        collection.remove(new BasicDBObject(EntityId.Field.Id, entityId.id.get))
+        jColl.remove(new BasicDBObject(EntityId.Field.Id, entityId.id.get))
       case _ =>
-        collection.remove(entity)
+        jColl.remove(toDBObject(entity))
     }
 
   def aggregate(first: DBObject, others: DBObject*)(implicit mongo: MongoClient) = {
     Logger.debug(s"aggregate($first, $others)")
-    collection.aggregate(first, others:_*)
+    jColl.aggregate(first, others:_*)
   }
 
-  def ensureIndex(keys: Map[String, Int], name: Option[String] = None, unique: Boolean = false)(implicit mongo: MongoClient): Unit = {
+  def ensureIndex(keys: DBObject, name: Option[String] = None, unique: Boolean = false)(implicit mongo: MongoClient): Unit =
     collection.ensureIndex(keys, name, unique)
-  }
 
-  def ensureIndex(key: String)(implicit mongo : MongoClient): Unit = {
+  def ensureIndex(key: String)(implicit mongo : MongoClient): Unit =
     collection.ensureIndex(key)
-  }
+
+  private def toDBObject(obj: T) =
+    Option(obj).map(th.toDBObject(_).asInstanceOf[DBObject]).orNull
 
   def count(implicit mongo: MongoClient) = collection.count
 }

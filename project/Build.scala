@@ -10,9 +10,9 @@ object ApplicationBuild extends Build {
 
 
 	val scalaVer = "2.10.3"
-	val appName       = "mongo"
+	val appName = "mongo"
   val isSnapshot = true
-  val version = "1.15" + (if (isSnapshot) "-SNAPSHOT" else "")
+  val version = "1.17" + (if (isSnapshot) "-SNAPSHOT" else "")
 
   val scalaStyleSettings = org.scalastyle.sbt.ScalastylePlugin.Settings
 

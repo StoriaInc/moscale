@@ -16,26 +16,9 @@ class Collection(val jColl: jmdb.DBCollection) {
     jColl.drop()
   }
 
-
-  def find[T](implicit th : TypeHandler[T]) : Cursor[T] = find[T](null : DBObject, null : DBObject)
-
-
-	def find[T](query: DBObject, fields: DBObject)(implicit th: TypeHandler[T]): Cursor[T] = {
-    Logger.debug("Find. Query = %s" format query)
-    new Cursor[T](jColl.find(query, fields))
-  }
-
   def findRaw(query: DBObject, fields: DBObject): RawCursor = {
     Logger.debug("Find. Query = %s" format query)
     new RawCursor(jColl.find(query, fields))
-  }
-
-
-  def findOne[T](query: DBObject, fields: DBObject, order : DBObject)(implicit th: TypeHandler[T]) : Option[T] = {
-    Logger.debug("FindOne. Query = %s" format query.toString)
-    val res = Option(jColl.findOne(query, fields, order)).map(th.fromDBObject(_))
-    Logger.debug("Found %s" format res.toString)
-    res
   }
 
   def findOneRaw(query: DBObject, fields: DBObject, order: DBObject): Option[DBObject] = {
@@ -45,33 +28,8 @@ class Collection(val jColl: jmdb.DBCollection) {
 
   def save(dbo : DBObject) : WriteResult = jColl.save(dbo)
 
-  def save[T <: Entity](entity : T)(implicit th: TypeHandler[T]): WriteResult =
-	  entity match {
-		  case e: EntityValidator =>
-        val invalidFields = e.validate
-			  if (invalidFields.isEmpty)
-			    save(toDBObject(e))
-        else
-          throw new InvalidFields(invalidFields)
-		  case e =>
-			  save(toDBObject(e))
-	  }
-
   def insert(dbo : DBObject) : WriteResult =
     jColl.insert(dbo)
-
-  def insert[T <: Entity](entity : T)(implicit th: TypeHandler[T]) : WriteResult = {
-	  entity match {
-		  case e: EntityValidator =>
-        val invalidFields = e.validate
-        if (invalidFields.isEmpty)
-          insert(toDBObject(e))
-        else
-          throw new InvalidFields(invalidFields)
-		  case e =>
-			  insert(toDBObject(e))
-	  }
-  }
 
 
   def update(query: DBObject, obj: DBObject, upsert: Boolean, multi: Boolean) : WriteResult =
@@ -84,30 +42,20 @@ class Collection(val jColl: jmdb.DBCollection) {
   def remove(query : DBObject) : WriteResult =
     jColl.remove(query)
 
-
-  def remove[T <: Entity](entity : T)(implicit th : TypeHandler[T]) : WriteResult =
-    remove(toDBObject(entity))
-
-
   def aggregate(query: DBObject, additionalQueries: DBObject*): AggregationOutput = {
     Logger.debug(s"aggregate. Query:${query}")
     jColl.aggregate(query, additionalQueries:_*)
   }
 
-
-  def ensureIndex(name : String) {
+  def ensureIndex(name: String) {
     jColl.ensureIndex(name)
   }
 
-  def ensureIndex(keys : Map[String, Int], name : Option[String] = None, unique : Boolean = false) {
-    jColl.ensureIndex(toDBObject(keys), name.orNull, unique)
+  def ensureIndex(keys: DBObject, name: Option[String] = None, unique: Boolean = false) {
+    jColl.ensureIndex(keys, name.orNull, unique)
   }
 
-  def ensureIndex(keys : DBObject, options : DBObject) {
+  def ensureIndex(keys: DBObject, options: DBObject) {
     jColl.ensureIndex(keys, options)
   }
-
-
-  private def toDBObject[T](obj : T)(implicit th : TypeHandler[T]) =
-    Option(obj).map(th.toDBObject(_).asInstanceOf[DBObject]).orNull
 }
