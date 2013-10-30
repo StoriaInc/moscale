@@ -16,12 +16,12 @@ class Collection(val jColl: jmdb.DBCollection) {
     jColl.drop()
   }
 
-  def findRaw(query: DBObject, fields: DBObject): RawCursor = {
+  def find(query: DBObject, fields: DBObject): RawCursor = {
     Logger.debug("Find. Query = %s" format query)
     new RawCursor(jColl.find(query, fields))
   }
 
-  def findOneRaw(query: DBObject, fields: DBObject, order: DBObject): Option[DBObject] = {
+  def findOne(query: DBObject, fields: DBObject, order: DBObject): Option[DBObject] = {
     Logger.debug("FindOne. Query = %s" format query.toString)
     Option(jColl.findOne(query, fields, order))
   }

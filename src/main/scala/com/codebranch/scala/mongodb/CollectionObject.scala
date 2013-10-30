@@ -20,15 +20,23 @@ class CollectionObject[T <: Entity with EntityId](implicit manifest: Manifest[T]
     new Cursor[T](jColl.find(query, fields))
   }
 
-	def findOne(query: DBObject, fields: DBObject = null, orderBy: DBObject = null)(implicit mongo: MongoClient): Option[T] =   {
+	def findOne(query: DBObject, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] = {
     Logger.debug("FindOne. Query = %s" format query.toString)
-    val res = Option(jColl.findOne(query, fields, orderBy)).map(th.fromDBObject(_))
+    val res = Option(jColl.findOne(query, fields, null: DBObject)).map(th.fromDBObject(_))
     Logger.debug("Found %s" format res.toString)
     res
   }
 
-  def findById(id: ObjectId, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] =
-    findOne(DBObjectGen.compose(EntityId.Field.Id, id), fields)
+  def findAndModify(query: DBObject, update: DBObject, fields: DBObject = null, upsert: Boolean = false, returnNew: Boolean = true)(implicit mongo: MongoClient): DBObject =
+    jColl.findAndModify(query, fields, null, false, update, returnNew, upsert)
+
+  def findById(id: ObjectId, fields: DBObject = null)(implicit mongo: MongoClient): Option[T] =  {
+    Logger.debug("FindById. Query = %s" format id.toString)
+    val res =
+      Option(jColl.findOne(DBObjectGen.compose(EntityId.Field.Id, id), fields, null: DBObject)).map(th.fromDBObject(_))
+    Logger.debug("Found %s" format res.toString)
+    res
+  }
 
   def save(entity: T)(implicit mongo: MongoClient): WriteResult =
     entity match {
