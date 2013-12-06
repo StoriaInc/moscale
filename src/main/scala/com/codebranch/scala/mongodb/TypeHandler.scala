@@ -226,7 +226,12 @@ class ImmutableMapTypeHandlerEnumKey[K <: Enumeration,T](implicit th : TypeHandl
 
 object EnumTypeHandler {
   def fromString[T <: Enumeration](s: String)(implicit m: Manifest[T]) =
-    m.runtimeClass.getField("MODULE$").get(null).asInstanceOf[T].withName(s)
+    try {
+      m.runtimeClass.getField("MODULE$").get(null).asInstanceOf[T].withName(s)
+    } catch {
+      case e: NoSuchElementException =>
+        throw new UnexpectedType(s"Key `$s` for Enumeration ${m.runtimeClass.getSimpleName} not found", e)
+    }
 }
 
 
