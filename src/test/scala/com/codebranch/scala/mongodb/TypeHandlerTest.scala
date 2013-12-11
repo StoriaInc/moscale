@@ -45,6 +45,14 @@ class TypeHandlerTest extends Specification {
     }
 
 
+    "convert Option[List[Entity]]" in {
+      val th = implicitly[TypeHandler[Option[List[Entity]]]]
+      val list = Some(List(new TestEntity, new TestEntity))
+      val dboList = th.toDBObject(list)
+      th.fromDBObject(dboList) must beEqualTo(list)
+    }
+
+
     "convert List[TestEntity]" in {
       val e = new TestEntity
       e.intF := Some(10)
