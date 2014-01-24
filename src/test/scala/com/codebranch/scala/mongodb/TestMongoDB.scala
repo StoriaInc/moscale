@@ -45,7 +45,7 @@ class TestComplexEntity extends Entity with EntityId {
 }
 
 @CollectionEntity(databaseName = "test", collectionName = "TestEntityWithValidator")
-class TestEntityWithValidator extends Entity with EntityValidator {
+class TestEntityWithValidator extends Entity with EntityValidator with EntityId {
   val requiredField = Field[String]("required", Some("a"))
 
   validator("validation error") {
@@ -116,17 +116,17 @@ class TestMongoDB extends Specification with BeforeAfter {
       te.intF := Option(3)
       te.strF := "uniq"
 
-      val coll = mongo.getCollection[TestEntity]
+      val coll = new CollectionObject[TestEntity]()
       coll drop()
-      coll save (te)
+      coll save te
 
       Stream from 1 take 3 foreach (x => coll save (new TestEntity))
 
       "Collection.find() is returning all records" <==>
-        (coll.find[TestEntity].getStream.length must beEqualTo(4))
+        (coll.find(MongoDSL.EmptyExpression).getStream.length must beEqualTo(4))
 
       "There is exactly one such entity!" <==>
-        (coll.find[TestEntity](te.toDBObject, null: DBObject).getStream.length must beEqualTo(1))
+        (coll.find(te.toDBObject, null: DBObject).getStream.length must beEqualTo(1))
 
     }
 
@@ -199,7 +199,7 @@ class TestMongoDB extends Specification with BeforeAfter {
 
     "Throw validation exception" in {
       val e = new TestEntityWithValidator
-      val collection = mongo.getCollection[TestEntityWithValidator]
+      val collection = new CollectionObject[TestEntityWithValidator]()
       collection.insert(e) must throwA[InvalidFields]
     }
   }

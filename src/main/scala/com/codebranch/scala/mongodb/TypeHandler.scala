@@ -16,7 +16,7 @@ import org.joda.time.{DateTimeZone, DateTime}
 import java.util.regex.Pattern
 import java.net.URL
 import scala.Enumeration
-
+import scala.collection.generic.CanBuildFrom
 
 
 class UnexpectedType(msg : String, cause : Throwable = null) extends RuntimeException(msg, cause)
@@ -226,7 +226,12 @@ class ImmutableMapTypeHandlerEnumKey[K <: Enumeration,T](implicit th : TypeHandl
 
 object EnumTypeHandler {
   def fromString[T <: Enumeration](s: String)(implicit m: Manifest[T]) =
-    m.runtimeClass.getField("MODULE$").get(null).asInstanceOf[T].withName(s)
+    try {
+      m.runtimeClass.getField("MODULE$").get(null).asInstanceOf[T].withName(s)
+    } catch {
+      case e: NoSuchElementException =>
+        throw new UnexpectedType(s"Key `$s` for Enumeration ${m.runtimeClass.getSimpleName} not found", e)
+    }
 }
 
 
@@ -241,85 +246,31 @@ class EnumTypeHandler [T <:Enumeration](implicit m: Manifest[T]) extends NotNull
   def toDBObjectNN(v: T#Value) = v.toString
 }
 
-//// TODO: FIX ME I am buggy
-//class MutableMapTypeHandler [V] (implicit th : TypeHandler[V])
-//  extends NotNullTypeHandler[mutable.Map[String, V]]
-//{
-//  import scala.collection.JavaConversions.{asJavaMap, asScalaMap}
-//  def fromDBType (v: Object) = v match {
-//    case v: DBObject => {
-//      val mutMap = mutable.Map[String,V]()
-//      val m = asScalaMap(v.toMap).asInstanceOf[mutable.Map[String,Object]]
-//      m.foreach( t => {
-//        if (null == t._2) throw UnexpectedType.unexpectedNull
-//        mutMap += (t._1 -> th.fromDBValue(t._2))
-//      })
-//      mutMap
-//    }
-//    case _ => throw new Exception("Unexpected type") // TODO: throw specific exception
-//  }
-//
-//
-//  def toDBType (v: mutable.Map[String, V]) = new BasicDBObject(asJavaMap(v)) // !!! obj must be converted!
-//}
 
+import scala.language.higherKinds
+class TraversableOnceTypeHandler[A, M[A] <: TraversableOnce[A]]
+  (implicit th : TypeHandler[A], cbf: CanBuildFrom[Nothing, A, M[A]] ) extends NotNullTypeHandler[M[A]] {
 
-class ListTypeHandler[T](implicit th : TypeHandler[T]) extends NotNullTypeHandler[List[T]] {
   def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
+
     case v: BasicDBList => {
-      val buffer = ListBuffer[T]()
+      val buffer = cbf()
       val it = v.iterator()
 
       while (it.hasNext) {
         buffer += th.fromDBObject(it.next())
       }
-      buffer.toList
+      buffer.result()
     }
     case x => throw unexpectedType(x.getClass, classOf[BasicDBList])
   }
 
-  def toDBObjectNN(v: List[T]) = {
+  def toDBObjectNN(v: M[A]) = {
     val dbList = new BasicDBList
     v foreach(x => dbList.add(th.toDBObject(x)))
     dbList
   }
 }
-
-
-class SetTypeHandler[T](implicit th : TypeHandler[T]) extends NotNullTypeHandler[Set[T]] {
-  def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
-    case v: BasicDBList => {
-      val buffer = ListBuffer[T]()
-      val it = v.iterator()
-
-      while (it.hasNext) {
-        buffer += th.fromDBObject(it.next())
-      }
-      buffer.toSet
-    }
-    case x => throw unexpectedType(x.getClass, classOf[BasicDBList])
-  }
-
-  def toDBObjectNN(v: Set[T]) = {
-    val dbList = new BasicDBList
-    v foreach(x => dbList.add(th.toDBObject(x)))
-    dbList
-  }
-}
-
-//class ReferenceTypeHandler[T <: EntityId](implicit th : TypeHandler[T], m: Manifest[T])
-//    extends NotNullTypeHandler[Reference[T]]
-//{
-//  def fromDBObjectNN(v: Object, partial: Boolean = false) = v match {
-//    case v: DBObject => {
-//      Reference.fromDBObject(v)
-//    }
-//    case x => throw unexpectedType(x.getClass, classOf[DBObject])
-//  }
-//
-//
-//  def toDBObjectNN(v: Reference[T]) = v.toDBObject
-//}
 
 
 abstract class ConvertingTypeHandler[T, StorableType](implicit storableTH : TypeHandler[StorableType])
@@ -362,9 +313,10 @@ package object handlers {
   implicit def entityTypeHandler[T <: Entity](implicit m : Manifest[T]): TypeHandler[T] =
     new EntityTypeHandler[T]
 
-  implicit def listTypeHandler[T](implicit th : TypeHandler[T]) = new ListTypeHandler[T]
+  implicit def traversableOnceTypeHandler[A, M[A] <: Traversable[A]]
+    (implicit th : TypeHandler[A], cbf: CanBuildFrom[Nothing, A, M[A]]) =
+    new TraversableOnceTypeHandler[A, M]()
 
-  implicit def setTypeHandler[T](implicit th : TypeHandler[T]) = new SetTypeHandler[T]
 
   implicit def immutableMapTypeHandlerStringKey[T](implicit th : TypeHandler[T]) =
     new ImmutableMapTypeHandlerStringKey[T]
@@ -372,11 +324,6 @@ package object handlers {
   implicit def immutableMapTypeHandlerEnumKey[K <: Enumeration, V](implicit th : TypeHandler[V], m: Manifest[K]) =
     new ImmutableMapTypeHandlerEnumKey[K, V]
 
-//  implicit def referenceTypeHandler[T <: Entity with EntityId](implicit m: Manifest[T]) =  new
-//          ReferenceTypeHandler[T]
-
-//  implicit def mutableMapTypeHandler[T](implicit th : TypeHandler[T]) : TypeHandler[mutable.Map[String,T]] =
-//    new MutableMapTypeHandler[T]
 
   implicit def enumTypeHandler[T <: Enumeration](implicit m: Manifest[T]): TypeHandler[T#Value] = {
     if (handlerMap.contains(m))
