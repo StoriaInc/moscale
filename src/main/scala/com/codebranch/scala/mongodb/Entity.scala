@@ -67,8 +67,14 @@ class Entity extends Cloneable with Serializable {
 
   def merge[T <: Entity](entity: T): this.type = {
     entity.fieldsMap.foreach { case (key, value) => {
-      if (value.isDefined && fieldsMap.contains(key))
-        fieldsMap(key).fromDBObject(value.toDBObject)
+      if (value.isDefined && fieldsMap.contains(key)) {
+        fieldsMap(key).value -> value.get match {
+          case (Some(e: Entity), ev: Entity) =>
+            e.merge(ev)
+          case _ =>
+            fieldsMap(key).fromDBObject(value.toDBObject)
+        }
+      }
     }}
     this
   }

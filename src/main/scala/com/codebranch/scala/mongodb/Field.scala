@@ -5,7 +5,7 @@ class Field[T](val key: String, default: Option[T] = None)(implicit tm: Manifest
 
   thisField => fm += key -> thisField
 
-  private var value = default
+  private[mongodb] var value = default
 
   def set(v: Option[T]): Unit = {
     value = v
