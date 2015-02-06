@@ -203,7 +203,7 @@ class ImmutableMapTypeHandlerStringKey[T](implicit th : TypeHandler[T]) extends 
 
 class ImmutableMapTypeHandlerEnumKey[K <: Enumeration,T](implicit th : TypeHandler[T], mn: Manifest[K])
     extends NotNullTypeHandler[immutable.Map[K#Value, T]] {
-  import scala.collection.JavaConversions.{asJavaMap, mapAsScalaMap}
+  import scala.collection.JavaConversions.{mapAsScalaMap}
 
   def fromDBObjectNN (obj: Object, partial: Boolean = false) = obj match {
     case obj: DBObject =>

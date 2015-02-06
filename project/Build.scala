@@ -9,10 +9,10 @@ object ApplicationBuild extends Build {
   val frumaticRepositoryReleases = frumaticRepository("releases")
 
 
-	val scalaVer = "2.10.3"
+	val scalaVer = "2.11.5"
 	val appName = "mongo"
-  val isSnapshot = true
-  val version = "1.22" + (if (isSnapshot) "-SNAPSHOT" else "")
+  val isSnapshot = false
+  val version = "1.23.1" + (if (isSnapshot) "-SNAPSHOT" else "")
 
   val scalaStyleSettings = org.scalastyle.sbt.ScalastylePlugin.Settings
 
@@ -26,7 +26,10 @@ object ApplicationBuild extends Build {
       "-deprecation"),
     retrieveManaged := true,
     testOptions in Test := Nil,
-    resolvers += "Local Maven Repository" at "file://" + Path.userHome.absolutePath + ".m2/repository",
+    resolvers ++= Seq(
+      "Local Maven Repository" at "file://" + Path.userHome.absolutePath + ".m2/repository",
+       "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases" // for specs2 --> scalaz 
+    ),
     publishTo := {
       if (isSnapshot)
         Some(frumaticRepositorySnapshots)
@@ -37,13 +40,13 @@ object ApplicationBuild extends Build {
   )
 
   val appDependencies = Seq(
-    "joda-time" % "joda-time" % "2.3",
-    "org.joda" % "joda-convert" % "1.5",
-    "org.mongodb" % "mongo-java-driver" % "2.11.3",
+    "joda-time" % "joda-time" % "2.7",
+    "org.joda" % "joda-convert" % "1.7",
+    "org.mongodb" % "mongo-java-driver" % "2.13.0",
     "ch.qos.logback" % "logback-classic" % "1.0.13",
 		"org.scala-lang" % "scala-reflect" % scalaVer,
     // testing libs
-    "org.specs2" %% "specs2" % "2.2.3" % "test"
+    "org.specs2" %% "specs2" % "2.4.16" % "test"
   )
 
 
