@@ -176,6 +176,12 @@ object MongoDSL {
     }
   }
 
+  private def $objArray(objs: Object*): Expression = {
+    val list = new BasicDBList
+    objs.filter(_ != null).foreach(list.add)
+    list
+  }
+
   def $value[T](value: T)(implicit th: TypeHandler[T]): Expression = {
     th.toDBObject(value).asInstanceOf[Expression]
   }
@@ -281,8 +287,32 @@ object MongoDSL {
   def $add[T](values: T*)(implicit th: TypeHandler[T]): Expression =
     compose("$add", $array[T](values))
 
+  def $add[T1, T2](value1: T1, value2: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$add", $objArray(th1.toDBObject(value1), th2.toDBObject(value2)))
+
+  def $eq[T1, T2](value1: T1, value2: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$eq", $objArray(th1.toDBObject(value1), th2.toDBObject(value2)))
+
+  def $neq[T1, T2](value1: T1, value2: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$neq", $objArray(th1.toDBObject(value1), th2.toDBObject(value2)))
+
+  def $gt[T1, T2](value1: T1, value2: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$gt", $objArray(th1.toDBObject(value1), th2.toDBObject(value2)))
+
+  def $gte[T1, T2](value1: T1, value2: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$gte", $objArray(th1.toDBObject(value1), th2.toDBObject(value2)))
+
+  def $lt[T1, T2](value1: T1, value2: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$lt", $objArray(th1.toDBObject(value1), th2.toDBObject(value2)))
+
+  def $lte[T1, T2](value1: T1, value2: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$lte", $objArray(th1.toDBObject(value1), th2.toDBObject(value2)))
+
   def $multiply[T](values: T*)(implicit th: TypeHandler[T]): Expression =
     compose("$multiply", $array[T](values))
+
+  def $multiply[T1, T2](value1: T1, value2: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$multiply", $objArray(th1.toDBObject(value1), th2.toDBObject(value2)))
 
   def $min[T](values: T*)(implicit th: TypeHandler[T]): Expression =
     compose("$min", $array[T](values))
@@ -292,5 +322,11 @@ object MongoDSL {
 
   def $avg[T](values: T*)(implicit th: TypeHandler[T]): Expression =
     compose("$avg", $array[T](values))
+
+  def $cond[T1, T2](`if`: Expression, `then`: T1, `else`: T2)(implicit th1: TypeHandler[T1], th2: TypeHandler[T2]): Expression =
+    compose("$cond", $objArray(`if`, th1.toDBObject(`then`), th2.toDBObject(`else`)))
+
+  def $cond(`if`: Expression, `then`: Expression, `else`: Expression): Expression =
+    compose("$cond", $objArray(`if`, `then`, `else`))
 
 }

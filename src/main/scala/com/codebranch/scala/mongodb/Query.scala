@@ -5,4 +5,5 @@ import Query.Expression
 
 object Query {
   type Expression = DBObject
+  type Value = Object
 }

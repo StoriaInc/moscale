@@ -1,6 +1,7 @@
 package com.codebranch.scala.mongodb
 
 
+import com.codebranch.scala.mongodb.Query.Expression
 import com.mongodb.{BasicDBObject, BasicDBList, DBObject}
 import org.bson.types.ObjectId
 import scala.language.implicitConversions

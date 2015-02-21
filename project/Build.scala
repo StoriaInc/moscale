@@ -12,7 +12,7 @@ object ApplicationBuild extends Build {
 	val scalaVer = "2.11.5"
 	val appName = "mongo"
   val isSnapshot = false
-  val version = "1.23.1" + (if (isSnapshot) "-SNAPSHOT" else "")
+  val version = "1.24.7" + (if (isSnapshot) "-SNAPSHOT" else "")
 
   val scalaStyleSettings = org.scalastyle.sbt.ScalastylePlugin.Settings
 
@@ -20,8 +20,13 @@ object ApplicationBuild extends Build {
     organization := "codebranch",
     Keys.version := version,
     scalaVersion := scalaVer,
+    javacOptions ++= Seq(
+      "-Xlint:unchecked",
+      "-source", "1.7", "-target", "1.7"
+    ),
     scalacOptions in ThisBuild ++= Seq(
       "-feature",
+      "-target:jvm-1.7",
       "-language:postfixOps",
       "-deprecation"),
     retrieveManaged := true,
@@ -35,8 +40,9 @@ object ApplicationBuild extends Build {
         Some(frumaticRepositorySnapshots)
       else
         Some(frumaticRepositoryReleases)
-    },
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
+    }
+//    ,
+//    credentials += Credentials(Path.userHome / ".ivy2" / ".fcredentials")
   )
 
   val appDependencies = Seq(
